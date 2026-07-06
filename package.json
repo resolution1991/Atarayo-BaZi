@@ -1,0 +1,35 @@
+{
+  "name": "bazi-uniapp-refactor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:core": "node --experimental-strip-types tests/core-baseline.test.ts",
+    "test:relations": "node --experimental-strip-types tests/relations.test.ts",
+    "test:luck": "node --experimental-strip-types tests/luck.test.ts",
+    "test:shen-sha": "node --experimental-strip-types tests/shen-sha.test.ts",
+    "test:full-data": "node --experimental-strip-types tests/full-lunar-data.test.ts",
+    "generate:lunar-data": "python3 tools/generate_lunar_data.py",
+    "generate:lunar-fixture": "python3 tools/generate_lunar_fixture.py",
+    "dev:h5": "uni --platform h5",
+    "build:h5": "uni build --platform h5",
+    "build:app": "uni build --platform app",
+    "build:apk:debug": "uni build --platform h5 && bash tools/build_android_webview_apk.sh"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-1000920260615733",
+    "@dcloudio/uni-components": "3.0.0-alpha-1000920260615733",
+    "@dcloudio/uni-h5": "3.0.0-alpha-1000920260615733",
+    "@dcloudio/uni-ui": "^1.5.0",
+    "@vue/reactivity": "3.5.38",
+    "@vue/runtime-core": "3.5.38",
+    "@vue/runtime-dom": "3.5.38",
+    "@vue/shared": "3.5.38",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-1000920260615733",
+    "typescript": "^5.8.0",
+    "vite": "^6.0.0"
+  }
+}

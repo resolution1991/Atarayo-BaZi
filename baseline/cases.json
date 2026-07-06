@@ -1,0 +1,88 @@
+[
+  {
+    "id": "existing_wang_dachui_1999_midday",
+    "name": "王大锤",
+    "gender": "男",
+    "birth_datetime": "1999-11-11-11-11",
+    "purpose": "对应原归档样例，验证常规中午时辰链路。"
+  },
+  {
+    "id": "female_same_datetime_gender_marker",
+    "name": "性别对照",
+    "gender": "女",
+    "birth_datetime": "1999-11-11-11-11",
+    "purpose": "验证日柱天干十神按性别标记为元女。"
+  },
+  {
+    "id": "demo_2000_noon",
+    "name": "示例",
+    "gender": "男",
+    "birth_datetime": "2000-01-01-12-00",
+    "purpose": "对应前端脚本内置示例日期，验证展示字段完整性。"
+  },
+  {
+    "id": "late_zi_hour_rollover",
+    "name": "晚子时",
+    "gender": "男",
+    "birth_datetime": "1999-11-11-23-30",
+    "purpose": "验证 23 点及以后使用下一天干支的原逻辑。"
+  },
+  {
+    "id": "before_late_zi_boundary",
+    "name": "子时边界前",
+    "gender": "女",
+    "birth_datetime": "1999-11-11-22-59",
+    "purpose": "验证 23 点前不换日。"
+  },
+  {
+    "id": "modern_spring_festival_day",
+    "name": "春节样例",
+    "gender": "男",
+    "birth_datetime": "2024-02-10-00-30",
+    "purpose": "验证现代日期和春节附近数据查询。"
+  },
+  {
+    "id": "spring_festival_eve_late_rollover",
+    "name": "除夕晚子时",
+    "gender": "女",
+    "birth_datetime": "2024-02-09-23-30",
+    "purpose": "验证节日前夜 23 点后换日至次日。"
+  },
+  {
+    "id": "early_supported_year",
+    "name": "早期边界",
+    "gender": "男",
+    "birth_datetime": "1900-01-01-00-00",
+    "purpose": "验证 parse_datetime 允许的最早年份。"
+  },
+  {
+    "id": "late_supported_csv_date",
+    "name": "晚期边界",
+    "gender": "女",
+    "birth_datetime": "2100-02-08-22-30",
+    "purpose": "验证农历 CSV 的最后有效日期。"
+  },
+  {
+    "id": "late_supported_csv_rollover_error",
+    "name": "晚期越界",
+    "gender": "女",
+    "birth_datetime": "2100-02-08-23-30",
+    "purpose": "验证 23 点换日后超过 CSV 范围时的错误行为。",
+    "expect_error": true
+  },
+  {
+    "id": "invalid_calendar_date",
+    "name": "无效日期",
+    "gender": "男",
+    "birth_datetime": "2024-02-30-10-00",
+    "purpose": "验证无效公历日期的错误行为。",
+    "expect_error": true
+  },
+  {
+    "id": "iso_datetime_from_frontend",
+    "name": "前端格式",
+    "gender": "男",
+    "birth_datetime": "1999-11-11T11:11",
+    "purpose": "验证前端 datetime-local 格式按 server.py 方式归一化。"
+  }
+]

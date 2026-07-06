@@ -1,0 +1,30 @@
+{
+  "name": "八字排盘",
+  "appid": "__UNI__BAZI_OFFLINE",
+  "description": "完全离线运行的八字排盘工具",
+  "versionName": "0.1.0",
+  "versionCode": "1",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueCompiler": "uni-app",
+    "compilerVersion": 3,
+    "splashscreen": {
+      "alwaysShowBeforeRender": false,
+      "waiting": false,
+      "autoclose": true,
+      "delay": 0
+    },
+    "modules": {},
+    "distribute": {
+      "android": {
+        "permissions": []
+      },
+      "ios": {}
+    }
+  },
+  "h5": {
+    "title": "八字排盘"
+  }
+}
+
