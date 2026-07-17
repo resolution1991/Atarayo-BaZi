@@ -1,5 +1,24 @@
 # Development Log / 开发日志
 
+## 2026-07-16 - Version 0.2.0 / 版本 0.2.0
+
+### English
+
+- Refreshed the mobile visual system across chart creation, chart detail, fortune, and history pages.
+- Updated the home title to `夜琛排盘` and the default birth date to `2000-01-01`.
+- Replaced the chart summary's day-master card with a centered `功能建设中` placeholder and reduced the strip height to about 70% of its previous size.
+- Replaced the Android launcher icon with the supplied golden wolf-and-moon artwork.
+- Bumped Android and project version metadata to `0.2.0` (`versionCode` 2).
+
+### 中文
+
+- 统一调整排盘、命盘详情、流年大运和历史记录页面的移动端视觉。
+- 首页标题更新为“夜琛排盘”，默认出生日期更新为 `2000-01-01`。
+- 命盘摘要右侧“日元”改为居中的“功能建设中”占位卡片，摘要条高度压缩至原先约 70%。
+- Android 启动器图标替换为用户提供的金色狼月图。
+- Android 应用显示名称更新为“夜琛八字”。
+- 项目及 Android 版本升级为 `0.2.0`（`versionCode` 2）。
+
 ## 2026-07-06 - Baseline 0.1.0 / 基线版本 0.1.0
 
 ### English
@@ -135,4 +154,3 @@ Initial MVP migration from the earlier local prototype into a uni-app workspace.
 ### 中文
 
 从早期本地原型迁移到 uni-app 工作区。重点是通过基准测试保持计算行为一致，同时构建移动端优先的页面体验。
-

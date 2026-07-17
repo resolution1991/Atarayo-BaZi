@@ -7,7 +7,7 @@
 APK 路径：
 
 ```text
-dist/apk/bazi-mvp-0.1.0-debug.apk
+dist/apk/bazi-mvp-0.2.0-debug.apk
 ```
 
 该包为本机 WebView 壳调试包，内置 H5 静态资源，使用 debug keystore 签名。APK 启动后通过 `https://appassets.androidplatform.net/index.html` 读取包内资源，由 WebView 本地拦截提供文件，不依赖外部服务器。
@@ -34,17 +34,17 @@ dist/apk/bazi-mvp-0.1.0-debug.apk
 
 当前 `src/manifest.json` 已配置：
 
-- 应用名：`八字排盘`
-- 版本名：`0.1.0`
-- 版本号：`1`
+- 应用名：`夜琛八字`
+- 版本名：`0.2.0`
+- 版本号：`2`
 - AppID：`__UNI__BAZI_OFFLINE`
 - Android 权限：空权限列表
+- Android 自适应图标：金色狼月图
 
 封正式包前仍需确认：
 
 - DCloud 平台正式 AppID。
 - Android 包名，例如 `com.example.bazi`。
-- 应用图标。
 - 启动图。
 - Android 签名证书。
 - iOS Bundle ID。
@@ -63,14 +63,14 @@ pnpm run build:apk:debug
 静态验证结果：
 
 - 包名：`com.algernon.bazi`
-- 应用名：`八字排盘`
-- 版本名：`0.1.0`
-- 版本号：`1`
+- 应用名：`夜琛八字`
+- 版本名：`0.2.0`
+- 版本号：`2`
 - minSdk：`23`
 - targetSdk：`36`
 - 签名：v1/v2/v3 均验证通过
 - 权限：无声明权限
-- SHA-256：`4d6d148273173119fc0f45538a47abfb9ca9f923fd3133fb7df3a52de63345f3`
+- SHA-256：`4fc6d1f9ca53809136826bf19f1131b57b1139c5ede0285b5ff3a67109fbcda4`
 
 本机打包资源冒烟验证：
 

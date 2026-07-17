@@ -36,9 +36,8 @@
           <button class="summary-item summary-action" @click="openFortune">
             <text class="summary-action-text">流年大运</text>
           </button>
-          <view class="summary-item">
-            <text class="summary-label">日元</text>
-            <text class="summary-value">{{ birthInfo.day.heavenly_stem.symbol }}</text>
+          <view class="summary-item summary-placeholder">
+            <text class="summary-placeholder-text">功能建设中</text>
           </view>
         </view>
       </view>
@@ -755,9 +754,11 @@ function formatLunarDay(day: number): string {
 
 .summary-item {
   min-width: 0;
-  padding: 18rpx 12rpx;
+  min-height: 54rpx;
+  padding: 8rpx 12rpx;
   border-radius: 6rpx;
   background: #f8f3e9;
+  box-sizing: border-box;
   text-align: center;
 }
 
@@ -766,7 +767,7 @@ function formatLunarDay(day: number): string {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 74rpx;
+  min-height: 54rpx;
   margin: 0;
   border: 0;
   background: #c43131;
@@ -786,6 +787,18 @@ function formatLunarDay(day: number): string {
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.summary-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-placeholder-text {
+  color: #8c8c8c;
+  font-size: 22rpx;
   line-height: 1.2;
 }
 
@@ -1409,4 +1422,141 @@ function formatLunarDay(day: number): string {
 .wx-earth-bg {
   background: #8a5c18;
 }
+
+/* Chart reading surface: a single paper sheet on ink, with the four pillars as the visual anchor. */
+.page {
+  min-height: 100vh;
+  padding: 28rpx 20rpx 40rpx;
+  background: var(--ink);
+  box-sizing: border-box;
+}
+
+.content {
+  overflow: hidden;
+  gap: 0;
+  border: 1rpx solid rgba(222, 216, 202, 0.82);
+  border-radius: 22rpx;
+  background: var(--paper);
+  box-shadow: 0 20rpx 46rpx rgba(0, 0, 0, 0.23);
+}
+
+.summary-card,
+.profile-card,
+.relation-card,
+.distribution-card,
+.detail-card {
+  border: 0;
+  border-bottom: 1rpx solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.summary-card { padding: 30rpx 30rpx 26rpx; }
+.summary-top { margin-bottom: 12rpx; }
+.name { max-width: 340rpx; height: 58rpx; color: var(--text); font-size: 42rpx; line-height: 58rpx; }
+.gender { color: var(--cinnabar); font-size: 25rpx; font-weight: 700; }
+.meta { color: var(--muted); font-size: 24rpx; line-height: 1.65; }
+
+.profile-card { padding: 26rpx 30rpx 28rpx; }
+.day-master { gap: 22rpx; }
+.day-master-token {
+  flex-basis: 108rpx;
+  width: 108rpx;
+  height: 108rpx;
+  border: 2rpx solid var(--gold);
+  background: #fcfaf3;
+  box-shadow: inset 0 0 0 6rpx rgba(182, 145, 85, 0.08);
+}
+.day-master-symbol { font-size: 51rpx; }
+.day-master-label { color: var(--gold); font-size: 20rpx; }
+.profile-line { color: #5e625c; font-size: 24rpx; line-height: 1.6; }
+.section-title { position: relative; margin-bottom: 15rpx; padding-left: 14rpx; color: var(--text); font-size: 29rpx; font-weight: 700; }
+.section-title::before { position: absolute; top: 6rpx; bottom: 6rpx; left: 0; width: 4rpx; border-radius: 99rpx; background: var(--gold); content: ""; }
+
+.summary-strip { gap: 12rpx; margin-top: 20rpx; }
+.summary-item { border: 1rpx solid var(--line); border-radius: 10rpx; background: #fcfaf3; }
+.summary-action { min-height: 54rpx; border: 0; border-radius: 10rpx; background: var(--cinnabar); }
+.summary-action:active { background: var(--cinnabar-deep); }
+.summary-action-text { color: #fffdf8; font-size: 25rpx; letter-spacing: 1rpx; }
+.summary-placeholder-text { color: var(--muted); font-size: 20rpx; }
+.summary-label { color: var(--muted); font-size: 20rpx; }
+.summary-value { color: var(--text); font-size: 29rpx; }
+
+.chart-table {
+  margin: 24rpx 20rpx;
+  border-color: var(--line);
+  border-radius: 13rpx;
+  background: var(--paper-strong);
+}
+
+.cell {
+  min-height: 72rpx;
+  padding: 11rpx 6rpx;
+  border-right-color: var(--line-soft);
+  border-bottom-color: var(--line-soft);
+  color: #4b4e49;
+  font-size: 22rpx;
+}
+
+.label { color: #716b5d; background: #f1ede3; }
+.table-head { color: var(--text); font-size: 23rpx; }
+.row-head { color: var(--gold); font-size: 21rpx; }
+.main { font-size: 46rpx; }
+.cell.main.wx-fire { color: #d63b32; }
+.cell.main.wx-wood { color: #2f9e44; }
+.cell.main.wx-metal { color: #d7a928; }
+.cell.main.wx-water { color: #1f78d1; }
+.cell.main.wx-earth { color: #8a5c18; }
+.small { color: #676b63; font-size: 20rpx; }
+.shen-sha-cell { min-height: 124rpx; }
+.shen-sha-chip { color: var(--gold); font-size: 20rpx; }
+.shen-sha-chip:active { color: var(--cinnabar); background: #f5eee5; }
+
+.relation-card,
+.distribution-card,
+.detail-card { padding: 26rpx 30rpx; }
+.relation-board { padding-top: 0; }
+.relation-line-list { gap: 6rpx; }
+.relation-line-row { height: 58rpx; }
+.relation-pillars { margin: 12rpx 0; padding: 16rpx 0; border-top-color: var(--line-soft); border-bottom-color: var(--line-soft); }
+.relation-pillar-label { color: var(--muted); font-size: 22rpx; }
+.relation-pillar-symbol { font-size: 39rpx; }
+.relation-token { background: var(--paper-strong); }
+.relation-empty { color: var(--muted); }
+.section-note { color: var(--muted); font-size: 20rpx; }
+
+.distribution-list { gap: 14rpx; }
+.distribution-row { grid-template-columns: 42rpx 1fr 40rpx; }
+.distribution-name { font-size: 24rpx; }
+.distribution-track { height: 12rpx; background: #e8e4da; }
+.distribution-bar { height: 12rpx; }
+.distribution-count { color: var(--muted); font-size: 22rpx; }
+
+.pillar-detail { padding: 22rpx 0; border-top-color: var(--line-soft); }
+.pillar-detail-label { color: var(--gold); font-size: 27rpx; }
+.pillar-ganzhi-symbol { font-size: 37rpx; }
+.pillar-meta-grid { color: #62665e; font-size: 22rpx; }
+.hidden-label { color: var(--muted); font-size: 22rpx; }
+.hidden-chip { border: 1rpx solid var(--line-soft); border-radius: 8rpx; background: #fcfaf3; }
+.hidden-meta { color: var(--muted); }
+
+.action-row { gap: 12rpx; margin: 4rpx 30rpx 30rpx; }
+.outline-button,
+.primary-button { height: 82rpx; border-radius: 12rpx; font-size: 27rpx; line-height: 82rpx; }
+.outline-button { border-color: var(--cinnabar); background: transparent; color: var(--cinnabar); }
+.primary-button { background: var(--cinnabar); color: #fffdf8; }
+.primary-button:active { background: var(--cinnabar-deep); }
+
+.modal-mask { background: rgba(6, 16, 22, 0.72); }
+.shen-sha-modal { border: 1rpx solid rgba(182, 145, 85, 0.58); border-radius: 18rpx; background: var(--paper); box-shadow: 0 24rpx 50rpx rgba(0, 0, 0, 0.28); }
+.shen-sha-modal-head { border-bottom-color: var(--line); }
+.shen-sha-modal-title { color: var(--text); font-size: 33rpx; }
+.modal-close { color: var(--cinnabar); }
+.shen-sha-section-title { color: var(--gold); font-size: 26rpx; }
+.shen-sha-modal-text { color: #575c54; font-size: 25rpx; }
+
+.empty { padding: 170rpx 40rpx 0; }
+.empty-title { color: var(--paper); }
+.empty-desc { color: rgba(247, 245, 239, 0.62); }
+.empty-button { border-radius: 12rpx; background: var(--cinnabar); color: #fffdf8; }
 </style>

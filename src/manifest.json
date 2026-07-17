@@ -1,9 +1,9 @@
 {
-  "name": "八字排盘",
+  "name": "夜琛八字",
   "appid": "__UNI__BAZI_OFFLINE",
   "description": "完全离线运行的八字排盘工具",
-  "versionName": "0.1.0",
-  "versionCode": "1",
+  "versionName": "0.2.0",
+  "versionCode": "2",
   "transformPx": false,
   "app-plus": {
     "usingComponents": true,
@@ -24,7 +24,6 @@
     }
   },
   "h5": {
-    "title": "八字排盘"
+    "title": "夜琛八字"
   }
 }
-

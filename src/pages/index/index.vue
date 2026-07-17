@@ -77,11 +77,6 @@
       </view>
 
       <view v-if="previewData" class="preview">
-        <view class="clock-face">
-          <view class="clock-hand hour-hand"></view>
-          <view class="clock-hand minute-hand"></view>
-          <view class="clock-dot"></view>
-        </view>
         <view class="preview-body">
           <view class="pillar-row">
             <text
@@ -101,7 +96,7 @@
               {{ pillar.earthly_branch.symbol }}
             </text>
           </view>
-          <text class="preview-meta">农历：{{ previewData.person.birth_info.lunar_date }}</text>
+          <text class="preview-meta">{{ previewLunarDate }}</text>
           <text class="preview-meta">公历：{{ currentGregorianDate }} {{ time }}</text>
         </view>
       </view>
@@ -141,7 +136,7 @@ const calendarOptions = [
 ] as const;
 type CalendarMode = (typeof calendarOptions)[number]["value"];
 
-const date = ref("1990-01-01");
+const date = ref("2000-01-01");
 const time = ref("00:00");
 const calendarMode = ref<CalendarMode>("solar");
 const lunarYears = Array.from({ length: 200 }, (_, index) => String(1900 + index));
@@ -200,6 +195,23 @@ const previewData = computed(() => {
 const previewPillars = computed<Pillar[]>(() => {
   const info = previewData.value?.person.birth_info;
   return info ? [info.year, info.month, info.day, info.hour] : [];
+});
+
+const previewLunarDate = computed(() => {
+  const info = previewData.value?.person.birth_info;
+  if (!info) {
+    return "-";
+  }
+
+  const match = info.lunar_date.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
+  if (!match) {
+    return info.lunar_date;
+  }
+
+  const [, year, month, day] = match;
+  const ganzhi = `${info.year.heavenly_stem.symbol}${info.year.earthly_branch.symbol}`;
+  const zodiac = zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
+  return `${year}（${ganzhi}${zodiac}）年 ${formatLunarMonth(Number(month))} ${formatLunarDay(Number(day))}`;
 });
 
 function onDateChange(event: { detail: { value: string } }) {
@@ -635,6 +647,233 @@ function getWuXingClass(wuXing?: string): string {
   font-size: 26rpx;
   line-height: 1;
 }
+
+/* Contemporary Chinese visual system: the functional markup above stays unchanged. */
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 40rpx 24rpx calc(188rpx + env(safe-area-inset-bottom));
+  background: var(--ink);
+  box-sizing: border-box;
+}
+
+.page::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 216rpx;
+  background-image: radial-gradient(circle at 82% 22%, rgba(182, 145, 85, 0.22) 0 2rpx, transparent 3rpx), linear-gradient(135deg, transparent 25%, rgba(182, 145, 85, 0.12) 25% 26%, transparent 26% 56%, rgba(182, 145, 85, 0.08) 56% 57%, transparent 57%);
+  content: "";
+  pointer-events: none;
+}
+
+.form-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  padding: 18rpx 30rpx 30rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.42);
+  border-radius: 24rpx;
+  background: var(--paper);
+  box-shadow: 0 18rpx 42rpx rgba(2, 13, 19, 0.26);
+}
+
+.name-line {
+  position: relative;
+  height: 96rpx;
+  border-bottom: 1rpx solid var(--line);
+}
+
+.name-line::before {
+  display: inline-block;
+  width: 104rpx;
+  color: var(--text);
+  font-size: 29rpx;
+  font-weight: 700;
+  line-height: 96rpx;
+  content: "姓名";
+}
+
+.name-input {
+  position: absolute;
+  top: 18rpx;
+  right: 0;
+  bottom: 18rpx;
+  left: 116rpx;
+  height: auto;
+  padding: 0 18rpx;
+  border: 1rpx solid var(--line);
+  border-radius: 12rpx;
+  background: rgba(255, 253, 248, 0.72);
+  color: var(--text);
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.placeholder { color: #a7a49c; }
+
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 144rpx;
+  margin-top: 24rpx;
+}
+
+.gender-segment,
+.calendar-segment {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: stretch;
+  overflow: hidden;
+  height: 74rpx;
+  border: 1rpx solid var(--line);
+  border-radius: 12rpx;
+  background: var(--paper-strong);
+}
+
+.segment-item,
+.calendar-option {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: 0;
+  color: var(--muted);
+  font-size: 26rpx;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.segment-item.active,
+.calendar-option.active {
+  align-self: stretch;
+  height: auto;
+  margin: 4rpx;
+  border-radius: 8rpx;
+  background: var(--cinnabar);
+  color: #fffdf8;
+  font-weight: 700;
+  box-shadow: 0 5rpx 12rpx rgba(150, 53, 37, 0.2);
+}
+
+.datetime-line {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 18rpx;
+  margin-top: 24rpx;
+}
+
+.datetime-line > picker,
+.datetime-line > picker > view { min-width: 0; }
+.lunar-line {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18rpx;
+}
+.lunar-line > picker { width: 100%; }
+
+.datetime-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 78rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid var(--line);
+  border-radius: 12rpx;
+  background: var(--paper-strong);
+  color: var(--text);
+  font-size: 27rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.lunar-year-value { font-size: 27rpx; }
+
+.leap-row,
+.rule-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 20rpx;
+  color: var(--muted);
+  font-size: 22rpx;
+  line-height: 1.55;
+}
+
+.rule-line {
+  justify-content: center;
+  text-align: center;
+}
+
+.leap-options { display: flex; gap: 10rpx; }
+.leap-option { padding: 2rpx 14rpx; border: 1rpx solid var(--line); border-radius: 99rpx; }
+.leap-option.active { border-color: var(--cinnabar); background: var(--cinnabar); color: #fff; }
+
+.preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28rpx;
+  padding: 24rpx 20rpx;
+  border-top: 1rpx solid var(--line);
+  border-bottom: 1rpx solid var(--line);
+}
+
+.preview::before,
+.preview::after {
+  position: absolute;
+  top: -14rpx;
+  left: 50%;
+  padding: 0 14rpx;
+  background: var(--paper);
+  color: var(--gold);
+  font-size: 24rpx;
+  font-weight: 700;
+  transform: translateX(-50%);
+  content: "四柱预览";
+  white-space: nowrap;
+}
+
+.preview::after { display: none; }
+.preview-body { display: flex; flex: 0 0 360rpx; width: 360rpx; max-width: 100%; min-width: 0; margin: 0 auto; flex-direction: column; align-items: stretch; }
+.pillar-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; max-width: none; column-gap: 0; }
+.pillar-symbol { font-size: 40rpx; font-weight: 800; text-align: center; }
+.preview-meta { align-self: center; display: block; margin-top: 7rpx; color: var(--muted); font-size: 20rpx; line-height: 1.4; text-align: center; }
+.preview-error { margin-top: 28rpx; padding: 28rpx; border: 1rpx dashed var(--line); color: var(--cinnabar); font-size: 25rpx; text-align: center; }
+
+.primary-button {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 92rpx;
+  margin-top: 26rpx;
+  border-radius: 14rpx;
+  background: var(--cinnabar);
+  color: #fffdf8;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 92rpx;
+  letter-spacing: 4rpx;
+  box-shadow: 0 14rpx 22rpx rgba(0, 0, 0, 0.2);
+}
+
+.primary-button:active { background: var(--cinnabar-deep); transform: translateY(1rpx); }
+
+.bottom-nav {
+  height: 118rpx;
+  border-top: 1rpx solid rgba(182, 145, 85, 0.24);
+  background: var(--ink-deep);
+  box-shadow: 0 -10rpx 26rpx rgba(0, 0, 0, 0.14);
+}
+
+.nav-item { gap: 10rpx; color: rgba(247, 245, 239, 0.65); }
+.nav-item.active { position: relative; color: var(--gold); }
+.nav-item.active::before { position: absolute; top: 0; width: 56rpx; height: 4rpx; border-radius: 99rpx; background: var(--cinnabar); content: ""; }
+.nav-icon { color: currentColor; font-size: 32rpx; }
+.nav-text { font-size: 23rpx; font-weight: 600; }
 
 .wx-fire {
   color: #d63b32;

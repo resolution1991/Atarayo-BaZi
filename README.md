@@ -1,4 +1,4 @@
-# Atarayo-BaZi / 八字排盘
+# Atarayo-BaZi / 夜琛八字
 
 Atarayo-BaZi is an offline-first BaZi charting app built with uni-app, Vue 3, and TypeScript. It focuses on a practical mobile workflow for creating a chart, reviewing the four pillars, saving local history, and packaging the app as an Android WebView APK.
 
@@ -6,13 +6,13 @@ Atarayo-BaZi 是一个离线优先的八字排盘应用，基于 uni-app、Vue 3
 
 ## Version / 版本
 
-Current baseline: `0.1.0`
+Current baseline: `0.2.0`
 
-当前基线版本：`0.1.0`
+当前基线版本：`0.2.0`
 
-This is the first public baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
+This is the second public baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
 
-这是首个公开基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
+这是第二个公开基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
 
 ## Features / 功能
 
@@ -121,7 +121,7 @@ Output:
 输出路径：
 
 ```text
-dist/apk/bazi-mvp-0.1.0-debug.apk
+dist/apk/bazi-mvp-0.2.0-debug.apk
 ```
 
 The APK is a debug-signed offline WebView package. H5 assets are embedded under `assets/www`, and the WebView loads `https://appassets.androidplatform.net/index.html` through local asset interception. It does not require an external server.
@@ -204,9 +204,9 @@ python3 tools/generate_lunar_fixture.py
 
 ## Android Validation / Android 验证
 
-The `0.1.0` debug APK was installed and smoke-tested on Android Studio AVD `Medium_Phone` (`emulator-5554`). Verified:
+The `0.2.0` debug APK was installed and smoke-tested on Android Studio AVD `Medium_Phone`. Verified:
 
-`0.1.0` 调试 APK 已在 Android Studio AVD `Medium_Phone`（`emulator-5554`）安装并冒烟测试。已确认：
+`0.2.0` 调试 APK 已在 Android Studio AVD `Medium_Phone` 上安装并冒烟测试。已确认：
 
 - App launches.
 - 应用可启动。
@@ -223,6 +223,13 @@ The `0.1.0` debug APK was installed and smoke-tested on Android Studio AVD `Medi
 
 ## Release Notes / 发布说明
 
+### 0.2.0
+
+- Reworked the mobile UI, added the custom wolf-and-moon launcher icon, and updated the chart summary placeholder.
+- 重构移动端视觉，替换金色狼月应用图标，并调整命盘摘要占位功能。
+- Updated the default birth date to 2000-01-01 and refreshed the public title to 夜琛排盘.
+- 默认出生日期调整为 2000-01-01，首页标题更新为“夜琛排盘”。
+
 ### 0.1.0
 
 - First baseline version.
@@ -235,4 +242,3 @@ The `0.1.0` debug APK was installed and smoke-tested on Android Studio AVD `Medi
 This project is for traditional culture study, product prototyping, and software engineering practice. BaZi and Shen Sha interpretations are not scientific conclusions and must not be used as medical, legal, financial, or life-critical advice.
 
 本项目用于传统文化学习、产品原型与软件工程实践。八字和神煞解释不属于科学结论，不应作为医疗、法律、财务或重大人生决策依据。
-

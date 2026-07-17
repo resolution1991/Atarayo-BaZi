@@ -675,4 +675,90 @@ function formatLunarDay(day: number): string {
 .wx-earth {
   color: #8a5c18;
 }
+
+/* Dense fortune data stays a timeline, while the paper sheet keeps it readable. */
+.page {
+  min-height: 100vh;
+  padding: 28rpx 20rpx 42rpx;
+  background: var(--ink);
+  box-sizing: border-box;
+}
+
+.content {
+  overflow: hidden;
+  gap: 0;
+  border: 1rpx solid rgba(222, 216, 202, 0.82);
+  border-radius: 22rpx;
+  background: var(--paper);
+  box-shadow: 0 20rpx 46rpx rgba(0, 0, 0, 0.23);
+}
+
+.profile-banner,
+.fortune-table-card,
+.start-card,
+.timeline-card {
+  border: 0;
+  border-bottom: 1rpx solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.profile-banner { gap: 20rpx; padding: 28rpx 30rpx; }
+.profile-token {
+  flex-basis: 98rpx;
+  width: 98rpx;
+  height: 98rpx;
+  border: 2rpx solid var(--gold);
+  background: #fcfaf3;
+  box-shadow: inset 0 0 0 5rpx rgba(182, 145, 85, 0.08);
+}
+.profile-zodiac { color: var(--cinnabar); font-size: 26rpx; }
+.profile-age { color: var(--gold); font-size: 19rpx; }
+.profile-meta { gap: 6rpx; color: #5e625c; font-size: 23rpx; }
+
+.fortune-table-card { margin: 0; padding: 22rpx 0; overflow: hidden; }
+.fortune-grid { margin: 0 20rpx; overflow: hidden; border: 1rpx solid var(--line); border-radius: 13rpx 13rpx 0 0; }
+.fortune-cell {
+  min-height: 66rpx;
+  padding: 8rpx 4rpx;
+  border-right-color: var(--line-soft);
+  border-bottom-color: var(--line-soft);
+  color: #51554f;
+  font-size: 20rpx;
+}
+.row-label { color: var(--gold); background: #f1ede3; font-size: 21rpx; }
+.column-head { color: var(--text); background: #fcfaf3; font-size: 20rpx; }
+.active-column { background: #f8eee6; color: var(--cinnabar); }
+.column-year { color: var(--muted); font-size: 17rpx; }
+.main-symbol { font-size: 40rpx; }
+.hidden-grid { margin: 0 20rpx; border: 1rpx solid var(--line); border-top: 0; border-radius: 0 0 13rpx 13rpx; }
+.hidden-label,
+.hidden-column { border-right-color: var(--line-soft); }
+.hidden-label { color: var(--gold); background: #f1ede3; font-size: 21rpx; }
+.hidden-column { gap: 6rpx; padding: 12rpx 4rpx; }
+.hidden-line { font-size: 20rpx; }
+.hidden-shishen { color: var(--muted); font-size: 18rpx; }
+
+.start-card { gap: 7rpx; padding: 24rpx 30rpx; color: #5c6059; font-size: 22rpx; }
+.precision-note { color: var(--muted); font-size: 19rpx; }
+
+.timeline-card { display: grid; grid-template-columns: 82rpx minmax(0, 1fr); }
+.timeline-row-title { border-right-color: var(--line); background: #f1ede3; color: var(--gold); font-size: 26rpx; }
+.timeline-scroll { background: #fcfaf3; }
+.fortune-period { width: 112rpx; min-height: 160rpx; padding: 12rpx 7rpx; border-right-color: var(--line-soft); background: transparent; }
+.fortune-period.active { position: relative; background: #f8eee6; }
+.fortune-period.active::after { position: absolute; right: 12rpx; bottom: 0; left: 12rpx; height: 4rpx; border-radius: 99rpx; background: var(--cinnabar); content: ""; }
+.period-year { color: var(--muted); font-size: 20rpx; }
+.period-age { color: #9a998f; font-size: 18rpx; }
+.period-stem,
+.period-branch { margin-top: 7rpx; font-size: 34rpx; }
+.period-small { color: var(--text); }
+.period-star { color: var(--cinnabar); font-size: 18rpx; }
+.month-list .fortune-period { width: 118rpx; }
+.month-period { min-height: 172rpx; }
+
+.empty { padding: 170rpx 40rpx 0; }
+.empty-title { color: var(--paper); }
+.empty-desc { color: rgba(247, 245, 239, 0.62); }
+.empty-button { border-radius: 12rpx; background: var(--cinnabar); color: #fffdf8; }
 </style>

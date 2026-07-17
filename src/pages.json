@@ -3,40 +3,40 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "排盘",
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black"
+        "navigationBarTitleText": "夜琛排盘",
+        "navigationBarBackgroundColor": "#12212a",
+        "navigationBarTextStyle": "white"
       }
     },
     {
       "path": "pages/chart/chart",
       "style": {
         "navigationBarTitleText": "命盘",
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black"
+        "navigationBarBackgroundColor": "#12212a",
+        "navigationBarTextStyle": "white"
       }
     },
     {
       "path": "pages/fortune/fortune",
       "style": {
         "navigationBarTitleText": "流年大运",
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black"
+        "navigationBarBackgroundColor": "#12212a",
+        "navigationBarTextStyle": "white"
       }
     },
     {
       "path": "pages/history/history",
       "style": {
         "navigationBarTitleText": "记录",
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black"
+        "navigationBarBackgroundColor": "#12212a",
+        "navigationBarTextStyle": "white"
       }
     }
   ],
   "globalStyle": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "八字排盘",
-    "navigationBarBackgroundColor": "#ffffff",
-    "backgroundColor": "#f5f5f5"
+    "navigationBarBackgroundColor": "#12212a",
+    "backgroundColor": "#12212a"
   }
 }
