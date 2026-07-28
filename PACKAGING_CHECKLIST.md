@@ -7,7 +7,7 @@
 APK 路径：
 
 ```text
-dist/apk/bazi-mvp-0.2.0-debug.apk
+dist/apk/bazi-mvp-0.3.0-debug.apk
 ```
 
 该包为本机 WebView 壳调试包，内置 H5 静态资源，使用 debug keystore 签名。APK 启动后通过 `https://appassets.androidplatform.net/index.html` 读取包内资源，由 WebView 本地拦截提供文件，不依赖外部服务器。
@@ -35,8 +35,8 @@ dist/apk/bazi-mvp-0.2.0-debug.apk
 当前 `src/manifest.json` 已配置：
 
 - 应用名：`夜琛八字`
-- 版本名：`0.2.0`
-- 版本号：`2`
+- 版本名：`0.3.0`
+- 版本号：`3`
 - AppID：`__UNI__BAZI_OFFLINE`
 - Android 权限：空权限列表
 - Android 自适应图标：金色狼月图
@@ -64,13 +64,13 @@ pnpm run build:apk:debug
 
 - 包名：`com.algernon.bazi`
 - 应用名：`夜琛八字`
-- 版本名：`0.2.0`
-- 版本号：`2`
+- 版本名：`0.3.0`
+- 版本号：`3`
 - minSdk：`23`
 - targetSdk：`36`
 - 签名：v1/v2/v3 均验证通过
 - 权限：无声明权限
-- SHA-256：`4fc6d1f9ca53809136826bf19f1131b57b1139c5ede0285b5ff3a67109fbcda4`
+- SHA-256：`2ad1615d3a70bfb7e35a07dcf490689d7addfbdc3ba9779a808e6eaa0b84d271`
 
 本机打包资源冒烟验证：
 

@@ -25,6 +25,14 @@
       }
     },
     {
+      "path": "pages/rules/rules",
+      "style": {
+        "navigationBarTitleText": "流派 / 规则说明",
+        "navigationBarBackgroundColor": "#12212a",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/history/history",
       "style": {
         "navigationBarTitleText": "记录",

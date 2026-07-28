@@ -1,6 +1,6 @@
 {
   "name": "bazi-uniapp-refactor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,8 @@
     "test:relations": "node --experimental-strip-types tests/relations.test.ts",
     "test:luck": "node --experimental-strip-types tests/luck.test.ts",
     "test:shen-sha": "node --experimental-strip-types tests/shen-sha.test.ts",
+    "test:strength": "node --experimental-strip-types tests/strength.test.ts",
+    "test:rule-docs": "node --experimental-strip-types tests/rule-documents.test.ts",
     "test:full-data": "node --experimental-strip-types tests/full-lunar-data.test.ts",
     "generate:lunar-data": "python3 tools/generate_lunar_data.py",
     "generate:lunar-fixture": "python3 tools/generate_lunar_fixture.py",

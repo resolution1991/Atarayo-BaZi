@@ -1,5 +1,27 @@
 # Development Log / 开发日志
 
+## 2026-07-28 - Version 0.3.0 / 版本 0.3.0
+
+### English
+
+- Added a switch between traditional and academic strength-analysis schools while keeping the traditional result as the default.
+- Implemented the academic weighted scoring rules and regression cases where the two schools produce different conclusions.
+- Added an in-app rule reference page covering both strength schools, Da Yun and Liu Nian calculation, pattern rules, and Shen Sha rules.
+- Enlarged and respaced the home-page eight-character preview for mobile screens.
+- Fixed five-element colors in the Da Yun / Liu Nian table.
+- Replaced the document expand/collapse font glyph with a rounded two-line vector chevron.
+- Bumped Android and project version metadata to `0.3.0` (`versionCode` 3).
+
+### 中文
+
+- 新增身强身弱“传统派 / 学术派”切换，默认继续使用传统派。
+- 实现学术派权重量化规则，并补充两派结论不同的回归用例。
+- 新增应用内“流派 / 规则说明”页，覆盖两种身强身弱规则、流年大运推算、格局与神煞规则。
+- 放大首页八字预览字号并优化移动端横向间距。
+- 修复流年大运表格干支的五行颜色。
+- 将文档展开/收起字体字符替换为圆角双线矢量箭头。
+- 项目及 Android 版本升级为 `0.3.0`（`versionCode` 3）。
+
 ## 2026-07-16 - Version 0.2.0 / 版本 0.2.0
 
 ### English

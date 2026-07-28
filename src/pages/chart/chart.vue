@@ -28,7 +28,12 @@
           <view class="profile-copy">
             <text class="section-title">命局摘要</text>
             <text class="profile-line">日主：{{ dayMasterSummary }}</text>
-            <text class="profile-line">身强身弱：{{ record.data.geju_analysis?.strength || "-" }}</text>
+            <view class="strength-line">
+              <text class="profile-line strength-value">身强身弱：{{ displayedStrength }}</text>
+              <button class="strength-switch" @click="toggleStrengthSchool">
+                当前流派：{{ strengthSchoolLabel }} 点击切换
+              </button>
+            </view>
             <text class="profile-line">格局：{{ record.data.geju_analysis?.geju || "-" }}</text>
           </view>
         </view>
@@ -36,9 +41,9 @@
           <button class="summary-item summary-action" @click="openFortune">
             <text class="summary-action-text">流年大运</text>
           </button>
-          <view class="summary-item summary-placeholder">
-            <text class="summary-placeholder-text">功能建设中</text>
-          </view>
+          <button class="summary-item rules-action" @click="openRules">
+            <text class="rules-action-text">流派/规则说明</text>
+          </button>
         </view>
       </view>
 
@@ -245,6 +250,7 @@ import type { HistoryRecord } from "../../services/history.ts";
 import type { WuXing } from "../../core/types.ts";
 import { analyzeGanzhiRelations, type GanzhiRelation } from "../../core/relations.ts";
 import { analyzeShenSha, getShenShaDefinition, type ShenShaHit } from "../../core/shen-sha.ts";
+import { analyzeStrengthBySchool, type StrengthSchool } from "../../core/strength.ts";
 import { readHistory, updateHistoryRecordName } from "../../services/history.ts";
 
 interface RelationLineView {
@@ -263,6 +269,7 @@ interface RelationLineView {
 const record = ref<HistoryRecord | null>(null);
 const nameDraft = ref("");
 const selectedShenShaName = ref<string | null>(null);
+const strengthSchool = ref<StrengthSchool>("traditional");
 const wuXingOrder: WuXing[] = ["木", "火", "土", "金", "水"];
 
 onLoad((query) => {
@@ -284,6 +291,17 @@ const pillars = computed(() => {
     : [];
 });
 const dayMaster = computed(() => birthInfo.value?.day.heavenly_stem ?? null);
+const displayedStrength = computed(() => {
+  const data = record.value?.data;
+  if (!data) {
+    return "-";
+  }
+  if (strengthSchool.value === "traditional" && data.geju_analysis?.strength) {
+    return data.geju_analysis.strength;
+  }
+  return analyzeStrengthBySchool(data, strengthSchool.value);
+});
+const strengthSchoolLabel = computed(() => (strengthSchool.value === "traditional" ? "传统派" : "学术派"));
 const dayMasterSummary = computed(() => {
   const master = dayMaster.value;
   if (!master) {
@@ -422,11 +440,19 @@ function openHistory() {
   uni.reLaunch({ url: "/pages/history/history" });
 }
 
+function toggleStrengthSchool() {
+  strengthSchool.value = strengthSchool.value === "traditional" ? "academic" : "traditional";
+}
+
 function openFortune() {
   if (!record.value) {
     return;
   }
   uni.navigateTo({ url: `/pages/fortune/fortune?id=${record.value.id}` });
+}
+
+function openRules() {
+  uni.navigateTo({ url: "/pages/rules/rules" });
 }
 
 function openShenSha(name: string) {
@@ -745,6 +771,37 @@ function formatLunarDay(day: number): string {
   line-height: 1.55;
 }
 
+.strength-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6rpx 10rpx;
+}
+
+.strength-value {
+  flex: 0 0 auto;
+}
+
+.strength-switch {
+  min-height: 38rpx;
+  margin: 0;
+  padding: 0 12rpx;
+  border: 1rpx solid #d8c89f;
+  border-radius: 20rpx;
+  background: #fbf8f1;
+  color: #8a7337;
+  font-size: 20rpx;
+  line-height: 36rpx;
+}
+
+.strength-switch::after {
+  border: 0;
+}
+
+.strength-switch:active {
+  background: #f2ead7;
+}
+
 .summary-strip {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -790,15 +847,30 @@ function formatLunarDay(day: number): string {
   line-height: 1.2;
 }
 
-.summary-placeholder {
+.rules-action {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  min-height: 54rpx;
+  margin: 0;
+  border: 1rpx solid #d8c89f;
+  background: #f8f3e9;
+  line-height: normal;
 }
 
-.summary-placeholder-text {
-  color: #8c8c8c;
-  font-size: 22rpx;
+.rules-action::after {
+  border: 0;
+}
+
+.rules-action:active {
+  background: #efe5cf;
+}
+
+.rules-action-text {
+  color: #8a7337;
+  font-size: 25rpx;
+  font-weight: 700;
   line-height: 1.2;
 }
 

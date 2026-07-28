@@ -761,4 +761,11 @@ function formatLunarDay(day: number): string {
 .empty-title { color: var(--paper); }
 .empty-desc { color: rgba(247, 245, 239, 0.62); }
 .empty-button { border-radius: 12rpx; background: var(--cinnabar); color: #fffdf8; }
+
+/* Keep five-element colors above the later table and timeline typography rules. */
+.page .wx-fire { color: #d63b32; }
+.page .wx-wood { color: #2f9e44; }
+.page .wx-metal { color: #d7a928; }
+.page .wx-water { color: #1f78d1; }
+.page .wx-earth { color: #8a5c18; }
 </style>

@@ -80,8 +80,8 @@
         <view class="preview-body">
           <view class="pillar-row">
             <text
-              v-for="pillar in previewPillars"
-              :key="pillar.heavenly_stem.symbol + pillar.earthly_branch.symbol + '-stem'"
+              v-for="(pillar, index) in previewPillars"
+              :key="'preview-stem-' + index"
               :class="['pillar-symbol', getWuXingClass(pillar.heavenly_stem.wu_xing)]"
             >
               {{ pillar.heavenly_stem.symbol }}
@@ -89,8 +89,8 @@
           </view>
           <view class="pillar-row">
             <text
-              v-for="pillar in previewPillars"
-              :key="pillar.heavenly_stem.symbol + pillar.earthly_branch.symbol + '-branch'"
+              v-for="(pillar, index) in previewPillars"
+              :key="'preview-branch-' + index"
               :class="['pillar-symbol', getWuXingClass(pillar.earthly_branch.wu_xing)]"
             >
               {{ pillar.earthly_branch.symbol }}
@@ -838,9 +838,10 @@ function getWuXingClass(wuXing?: string): string {
 }
 
 .preview::after { display: none; }
-.preview-body { display: flex; flex: 0 0 360rpx; width: 360rpx; max-width: 100%; min-width: 0; margin: 0 auto; flex-direction: column; align-items: stretch; }
-.pillar-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; max-width: none; column-gap: 0; }
-.pillar-symbol { font-size: 40rpx; font-weight: 800; text-align: center; }
+.preview-body { display: flex; flex: 0 1 80vw; width: 80vw; max-width: 600px; min-width: 0; margin: 0 auto; flex-direction: column; align-items: stretch; }
+.pillar-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; max-width: none; column-gap: 28rpx; }
+.pillar-row + .pillar-row { margin-top: 6rpx; }
+.pillar-symbol { font-size: 54rpx; font-weight: 800; line-height: 1.08; text-align: center; }
 .preview-meta { align-self: center; display: block; margin-top: 7rpx; color: var(--muted); font-size: 20rpx; line-height: 1.4; text-align: center; }
 .preview-error { margin-top: 28rpx; padding: 28rpx; border: 1rpx dashed var(--line); color: var(--cinnabar); font-size: 25rpx; text-align: center; }
 

@@ -6,13 +6,13 @@ Atarayo-BaZi 是一个离线优先的八字排盘应用，基于 uni-app、Vue 3
 
 ## Version / 版本
 
-Current baseline: `0.2.0`
+Current baseline: `0.3.0`
 
-当前基线版本：`0.2.0`
+当前基线版本：`0.3.0`
 
-This is the second public baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
+This is the third public baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
 
-这是第二个公开基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
+这是第三个公开基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
 
 ## Features / 功能
 
@@ -20,6 +20,10 @@ This is the second public baseline. It is suitable for functional testing, rule 
 - 公历与农历生日输入，基于内置农历数据离线排盘。
 - Four-pillar display with heavenly stems, earthly branches, hidden stems, ten gods, five-element colors, strength and pattern summary.
 - 命盘页展示天干、地支、藏干、十神、五行颜色、身强身弱与格局摘要。
+- Switchable traditional and academic strength-analysis schools.
+- 身强身弱支持传统派与学术派切换显示。
+- In-app rule documents covering strength, luck cycles, patterns, and Shen Sha.
+- 内置流派与规则说明文档，涵盖身强身弱、流年大运、格局与神煞。
 - Shen Sha row under the BaZi table, with multiple entries stacked per pillar and tappable detail dialogs.
 - 八字表格下方新增“神煞”行，单柱多个神煞换行展示，点击可查看释义、查法与本盘落点。
 - Ganzhi relation overview for stems and branches.
@@ -121,7 +125,7 @@ Output:
 输出路径：
 
 ```text
-dist/apk/bazi-mvp-0.2.0-debug.apk
+dist/apk/bazi-mvp-0.3.0-debug.apk
 ```
 
 The APK is a debug-signed offline WebView package. H5 assets are embedded under `assets/www`, and the WebView loads `https://appassets.androidplatform.net/index.html` through local asset interception. It does not require an external server.
@@ -222,6 +226,17 @@ The `0.2.0` debug APK was installed and smoke-tested on Android Studio AVD `Medi
 - 冒烟测试期间 crash buffer 为空。
 
 ## Release Notes / 发布说明
+
+### 0.3.0
+
+- Added switchable traditional and academic schools for strength analysis, including deterministic academic scoring tests.
+- 新增身强身弱“传统派 / 学术派”切换，并为学术派量化规则补充可复现测试。
+- Added the in-app “Schools / Rule Reference” page with five user-facing rule documents.
+- 新增“流派 / 规则说明”页面，内置五份面向普通用户的规则说明。
+- Enlarged the home-page eight-character preview and refined spacing for mobile screens.
+- 放大首页八字预览字号并优化横向间距。
+- Fixed five-element colors in the Da Yun / Liu Nian table and replaced the document toggle glyph with a rounded vector chevron.
+- 修复流年大运表格干支五行颜色，并将文档展开字符替换为圆角矢量箭头。
 
 ### 0.2.0
 
