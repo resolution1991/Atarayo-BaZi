@@ -10,6 +10,12 @@ APK 路径：
 dist/apk/bazi-mvp-0.5.0-debug.apk
 ```
 
+GitHub Release：
+
+```text
+https://github.com/resolution1991/Atarayo-BaZi/releases/tag/v0.5.0
+```
+
 该包为本机 WebView 壳调试包，内置 H5 静态资源，使用 debug keystore 签名。APK 启动后通过 `https://appassets.androidplatform.net/index.html` 读取包内资源，由 WebView 本地拦截提供文件，不依赖外部服务器。
 
 建议顺序：

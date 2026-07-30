@@ -17,6 +17,7 @@
 - Completed Android API 37 upgrade QA: five legacy records migrated with backup, settings persistence, reverse display, minute-level luck-start trace, and linked re-charting all passed.
 - Confirmed offline cold start with Wi-Fi and mobile data disabled, then rebuilt the final APK with WebView debugging disabled; final cold start took `172 ms` and the crash buffer was empty.
 - Built `bazi-mvp-0.5.0-debug.apk`, verified v1/v2/v3 signatures and zero declared permissions, with SHA-256 `9484276d33ee6cd982c84b643b1cd2b38b652ca276b186e4dfb64068370917f8`.
+- Published commit `4f64b0e` and annotated tag `v0.5.0` to GitHub; the public Release includes the APK asset and its remote digest matches the local SHA-256.
 
 ### 中文
 
@@ -33,6 +34,7 @@
 - 完成 Android API 37 覆盖升级验收：5 条旧记录带备份迁移，设置持久化、四柱倒序、分钟级起运过程和关联式重排均通过。
 - 关闭 Wi-Fi 与移动数据后离线冷启动通过；随后移除 WebView 调试开关并重建最终 APK，最终冷启动耗时 `172 ms`，crash buffer 为空。
 - 生成 `bazi-mvp-0.5.0-debug.apk`，v1/v2/v3 签名通过、Android 权限声明为空，SHA-256 为 `9484276d33ee6cd982c84b643b1cd2b38b652ca276b186e4dfb64068370917f8`。
+- 发布提交 `4f64b0e` 与注释标签 `v0.5.0` 已推送至 GitHub；公开 Release 已包含 APK，远端摘要与本地 SHA-256 一致。
 
 ## 2026-07-30 - Version 0.4.0 / 版本 0.4.0
 

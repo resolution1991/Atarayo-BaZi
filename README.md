@@ -10,6 +10,10 @@ Current baseline: `0.5.0`
 
 当前基线版本：`0.5.0`
 
+GitHub Release: https://github.com/resolution1991/Atarayo-BaZi/releases/tag/v0.5.0
+
+GitHub 发布页：https://github.com/resolution1991/Atarayo-BaZi/releases/tag/v0.5.0
+
 This is the fifth development baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
 
 这是第五个开发基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
