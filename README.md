@@ -6,13 +6,13 @@ Atarayo-BaZi 是一个离线优先的八字排盘应用，基于 uni-app、Vue 3
 
 ## Version / 版本
 
-Current baseline: `0.3.0`
+Current baseline: `0.4.0`
 
-当前基线版本：`0.3.0`
+当前基线版本：`0.4.0`
 
-This is the third public baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
+This is the fourth development baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
 
-这是第三个公开基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
+这是第四个开发基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
 
 ## Features / 功能
 
@@ -30,8 +30,10 @@ This is the third public baseline. It is suitable for functional testing, rule v
 - 八字天干地支作用关系速览。
 - Da Yun and Liu Nian timeline.
 - 大运、流年时间线。
-- Local history with search, inline name editing, record deletion, and clear-all.
-- 本地历史记录，支持搜索、姓名编辑、单条删除与清空。
+- Local history with name search, gender/year/zodiac filters, five-element colors, inline name editing, record deletion, and clear-all.
+- 本地历史记录支持姓名搜索、性别/年份/属相筛选、干支五行颜色、姓名编辑、单条删除与清空。
+- Clipboard export for chart details and the next ten years of Da Yun / Liu Nian information.
+- 支持将命盘详情及未来十年大运流年信息复制到剪贴板。
 - Android debug APK packaging through a lightweight offline WebView shell.
 - 通过轻量离线 WebView 壳生成 Android 调试 APK。
 
@@ -63,6 +65,8 @@ Key documents / 关键文档：
 - `PACKAGING_CHECKLIST.md`：Android 打包检查清单。
 - `DEVELOPMENT_LOG.md`: bilingual development log.
 - `DEVELOPMENT_LOG.md`：中英双语开发日志。
+- `VERSION_ROADMAP.md`: internal offline-first version plan.
+- `VERSION_ROADMAP.md`：内部离线优先版本演进计划。
 
 ## Requirements / 环境要求
 
@@ -125,7 +129,7 @@ Output:
 输出路径：
 
 ```text
-dist/apk/bazi-mvp-0.3.0-debug.apk
+dist/apk/bazi-mvp-0.4.0-debug.apk
 ```
 
 The APK is a debug-signed offline WebView package. H5 assets are embedded under `assets/www`, and the WebView loads `https://appassets.androidplatform.net/index.html` through local asset interception. It does not require an external server.
@@ -174,6 +178,23 @@ Shen Sha:
 pnpm run test:shen-sha
 ```
 
+Strength schools:
+
+身强身弱流派：
+
+```bash
+pnpm run test:strength
+```
+
+Chart and future-luck exports:
+
+命盘与未来流运导出：
+
+```bash
+pnpm run test:export
+pnpm run test:fortune-export
+```
+
 ## Shen Sha Scope / 神煞范围
 
 Version `0.1.0` implements 35 Shen Sha definitions that can be determined from static four-pillar data, including Tian Yi Nobleman, Tai Ji Nobleman, Wen Chang Nobleman, Fu Xing Nobleman, Tian Chu Nobleman, Yi Ma, Hua Gai, Tao Hua, Kong Wang, Tian She, Kui Gang, and others.
@@ -208,24 +229,41 @@ python3 tools/generate_lunar_fixture.py
 
 ## Android Validation / Android 验证
 
-The `0.2.0` debug APK was installed and smoke-tested on Android Studio AVD `Medium_Phone`. Verified:
+The `0.4.0` debug APK was installed as an upgrade and smoke-tested on Android Studio AVD `Medium_Phone` (Android API 37). Verified:
 
-`0.2.0` 调试 APK 已在 Android Studio AVD `Medium_Phone` 上安装并冒烟测试。已确认：
+`0.4.0` 调试 APK 已通过覆盖升级方式安装到 Android Studio AVD `Medium_Phone`（Android API 37）并完成冒烟测试。已确认：
 
-- App launches.
-- 应用可启动。
-- Home page renders.
-- 首页可渲染。
-- A chart can be generated.
-- 可生成命盘。
-- Shen Sha row renders under the BaZi table.
-- 八字表格下方可展示“神煞”行。
-- Tapping a Shen Sha opens the detail dialog.
-- 点击神煞可打开详情弹窗。
-- No crash was found in the crash buffer during smoke testing.
-- 冒烟测试期间 crash buffer 为空。
+- The final APK launches cold without a crash and retains five pre-upgrade history records.
+- 最终 APK 冷启动无崩溃，并保留升级前的 5 条历史记录。
+- History name search, gender/zodiac filters, clear-filter action, and five-element colors work.
+- 历史姓名搜索、性别/属相筛选、清除筛选及干支五行颜色正常。
+- Chart export shows the expected toast, excludes the person's name, and includes every required section.
+- 命盘导出 Toast 正确，复制内容不含姓名并包含全部约定字段。
+- Future-luck export shows the expected toast and contains exactly ten years (`2026–2035`) of Da Yun / Liu Nian data.
+- 未来流运导出 Toast 正确，并包含 `2026—2035` 恰好十年的大运与流年信息。
+- The future-luck export button text is vertically and horizontally centered.
+- 未来流运导出按钮文字已横向、纵向居中。
+- The APK declares no Android permissions, including no network permission.
+- APK 未声明任何 Android 权限，包括网络权限。
+
+Final debug APK SHA-256 / 最终调试包 SHA-256：
+
+```text
+ae60071d116e401703f865ab8ecde4032b944cbc97f599df6f8f10b5866b0fdb
+```
 
 ## Release Notes / 发布说明
+
+### 0.4.0
+
+- Added five-element colors and gender, birth-year, and zodiac filters to the local history page.
+- 历史记录页增加干支五行颜色以及性别、出生年份和属相筛选。
+- Added structured clipboard export for chart details without including the person's name.
+- 命盘详情增加结构化剪贴板导出，且不包含命主姓名。
+- Added a ten-year Da Yun / Liu Nian export starting from the current year, including correct transitions between Da Yun periods.
+- 流年大运页增加从当前年起连续十年的导出，并正确处理跨大运切换。
+- Added deterministic export tests and retained the fully offline runtime.
+- 增加可复现的导出测试，运行时继续保持完全离线。
 
 ### 0.3.0
 

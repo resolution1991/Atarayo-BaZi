@@ -6,7 +6,7 @@
         <input
           v-model="searchText"
           class="search-input"
-          placeholder="请输入搜索的内容"
+          placeholder="请输入命主姓名"
           placeholder-class="placeholder"
         />
       </view>
@@ -19,12 +19,59 @@
       </button>
     </view>
 
-    <view class="category-row">
-      <view class="category-tabs">
-        <text class="category active">全部</text>
-        <text class="add-entry" @click="createRecord">+</text>
+    <view class="filter-panel">
+      <view class="filter-heading">
+        <button :class="['show-all-button', !hasActiveFilters ? 'active' : '']" @click="clearFilters">
+          显示全部
+        </button>
+        <text v-if="hasActiveFilters" class="filter-status">已启用筛选</text>
       </view>
-      <view v-if="manageMode && records.length" class="clear-link-button" @click="confirmClear">清空全部</view>
+      <view class="filter-row">
+        <text class="filter-label">性别</text>
+        <view class="filter-options">
+          <button
+            v-for="gender in genderOptions"
+            :key="gender"
+            :class="['filter-chip', selectedGender === gender ? 'active' : '']"
+            @click="selectedGender = gender"
+          >
+            {{ gender }}
+          </button>
+        </view>
+      </view>
+      <view class="filter-row">
+        <text class="filter-label">出生年月</text>
+        <picker
+          class="year-picker"
+          mode="selector"
+          :range="yearOptions"
+          :value="selectedYearIndex"
+          @change="handleYearChange"
+        >
+          <view :class="['picker-value', selectedYear ? 'active' : '']">
+            {{ selectedYear || "所有年份" }}
+            <text class="picker-arrow">⌄</text>
+          </view>
+        </picker>
+      </view>
+      <view class="filter-row zodiac-row">
+        <text class="filter-label">属相</text>
+        <scroll-view class="zodiac-scroll" scroll-x :show-scrollbar="false">
+          <view class="zodiac-options">
+            <button
+              v-for="option in zodiacOptions"
+              :key="option.branch"
+              :class="['filter-chip', selectedZodiac === option.branch ? 'active' : '']"
+              @click="selectedZodiac = option.branch"
+            >
+              {{ option.label }}
+            </button>
+          </view>
+        </scroll-view>
+      </view>
+      <view v-if="manageMode && records.length" class="manage-filter-actions">
+        <view class="clear-link-button" @click="confirmClear">清空全部记录</view>
+      </view>
     </view>
 
     <view v-if="filteredRecords.length" class="list">
@@ -43,8 +90,24 @@
 
         <view class="record-chart">
           <view class="ganzhi-lines" @click="handleRecordClick(record.id)">
-            <text>{{ getStemLine(record) }}</text>
-            <text>{{ getBranchLine(record) }}</text>
+            <view class="ganzhi-line">
+              <text
+                v-for="(stem, index) in getStemItems(record)"
+                :key="`stem-${index}`"
+                :class="['ganzhi-symbol', getWuXingClass(stem.wu_xing, stem.symbol)]"
+              >
+                {{ stem.symbol }}
+              </text>
+            </view>
+            <view class="ganzhi-line">
+              <text
+                v-for="(branch, index) in getBranchItems(record)"
+                :key="`branch-${index}`"
+                :class="['ganzhi-symbol', getWuXingClass(branch.wu_xing, branch.symbol)]"
+              >
+                {{ branch.symbol }}
+              </text>
+            </view>
           </view>
           <view class="row-actions">
             <view v-if="!manageMode" class="chart-badge" @click="handleRecordClick(record.id)">
@@ -80,19 +143,62 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
+import type { Gender } from "../../core/types.ts";
 import type { HistoryRecord } from "../../services/history.ts";
 import { clearHistory, deleteHistoryRecord, readHistory } from "../../services/history.ts";
 
 const records = ref<HistoryRecord[]>([]);
 const searchText = ref("");
 const manageMode = ref(false);
+const selectedGender = ref<Gender | "">("");
+const selectedYear = ref("");
+const selectedZodiac = ref("");
+
+const genderOptions: Gender[] = ["男", "女"];
+const zodiacOptions = [
+  { branch: "子", label: "鼠" },
+  { branch: "丑", label: "牛" },
+  { branch: "寅", label: "虎" },
+  { branch: "卯", label: "兔" },
+  { branch: "辰", label: "龙" },
+  { branch: "巳", label: "蛇" },
+  { branch: "午", label: "马" },
+  { branch: "未", label: "羊" },
+  { branch: "申", label: "猴" },
+  { branch: "酉", label: "鸡" },
+  { branch: "戌", label: "狗" },
+  { branch: "亥", label: "猪" },
+];
+
+const availableYears = computed(() =>
+  Array.from(
+    new Set(
+      records.value
+        .map((record) => record.data.person.birth_info.gregorian_date.slice(0, 4))
+        .filter((year) => /^\d{4}$/.test(year)),
+    ),
+  ).sort((a, b) => Number(b) - Number(a)),
+);
+const yearOptions = computed(() => ["所有年份", ...availableYears.value]);
+const selectedYearIndex = computed(() => {
+  const index = yearOptions.value.indexOf(selectedYear.value);
+  return index >= 0 ? index : 0;
+});
+const hasActiveFilters = computed(
+  () => Boolean(selectedGender.value || selectedYear.value || selectedZodiac.value),
+);
 
 const filteredRecords = computed(() => {
   const keyword = searchText.value.trim().toLowerCase();
-  if (!keyword) {
-    return records.value;
-  }
-  return records.value.filter((record) => getSearchText(record).includes(keyword));
+  return records.value.filter((record) => {
+    const info = record.data.person.birth_info;
+    return (
+      (!keyword || getSearchText(record).includes(keyword)) &&
+      (!selectedGender.value || record.data.person.gender === selectedGender.value) &&
+      (!selectedYear.value || info.gregorian_date.startsWith(`${selectedYear.value}-`)) &&
+      (!selectedZodiac.value || info.year.earthly_branch.symbol === selectedZodiac.value)
+    );
+  });
 });
 
 onShow(() => {
@@ -120,6 +226,17 @@ function createRecord() {
 
 function toggleManageMode() {
   manageMode.value = !manageMode.value;
+}
+
+function clearFilters() {
+  selectedGender.value = "";
+  selectedYear.value = "";
+  selectedZodiac.value = "";
+}
+
+function handleYearChange(event: { detail: { value: string | number } }) {
+  const index = Number(event.detail.value);
+  selectedYear.value = index > 0 ? yearOptions.value[index] ?? "" : "";
 }
 
 function confirmClear() {
@@ -171,13 +288,39 @@ function getSearchText(record: HistoryRecord): string {
 }
 
 function getStemLine(record: HistoryRecord): string {
-  const info = record.data.person.birth_info;
-  return [info.year, info.month, info.day, info.hour].map((pillar) => pillar.heavenly_stem.symbol).join("");
+  return getStemItems(record).map((stem) => stem.symbol).join("");
 }
 
 function getBranchLine(record: HistoryRecord): string {
+  return getBranchItems(record).map((branch) => branch.symbol).join("");
+}
+
+function getStemItems(record: HistoryRecord) {
   const info = record.data.person.birth_info;
-  return [info.year, info.month, info.day, info.hour].map((pillar) => pillar.earthly_branch.symbol).join("");
+  return [info.year, info.month, info.day, info.hour].map((pillar) => pillar.heavenly_stem);
+}
+
+function getBranchItems(record: HistoryRecord) {
+  const info = record.data.person.birth_info;
+  return [info.year, info.month, info.day, info.hour].map((pillar) => pillar.earthly_branch);
+}
+
+function getWuXingClass(wuXing?: string, symbol?: string): string {
+  const symbolWuXing: Record<string, string> = {
+    甲: "木", 乙: "木", 寅: "木", 卯: "木",
+    丙: "火", 丁: "火", 巳: "火", 午: "火",
+    戊: "土", 己: "土", 辰: "土", 戌: "土", 丑: "土", 未: "土",
+    庚: "金", 辛: "金", 申: "金", 酉: "金",
+    壬: "水", 癸: "水", 子: "水", 亥: "水",
+  };
+  const classMap: Record<string, string> = {
+    火: "wx-fire",
+    木: "wx-wood",
+    金: "wx-metal",
+    水: "wx-water",
+    土: "wx-earth",
+  };
+  return classMap[wuXing || symbolWuXing[symbol ?? ""]] || "";
 }
 
 function getBadgeText(record: HistoryRecord): string {
@@ -541,17 +684,147 @@ function formatGregorian(dateText: string): string {
 
 .manage-button.active { border-color: var(--cinnabar); background: var(--cinnabar); color: #fffdf8; }
 
-.category-row {
-  height: 92rpx;
-  padding: 0 8rpx;
-  border-bottom: 1rpx solid rgba(222, 216, 202, 0.24);
+.filter-panel {
+  margin-top: 18rpx;
+  padding: 16rpx 18rpx 18rpx;
+  border: 1rpx solid rgba(222, 216, 202, 0.24);
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.035);
 }
 
-.category-tabs { gap: 34rpx; height: 92rpx; }
-.category { height: 92rpx; color: rgba(247, 245, 239, 0.62); font-size: 26rpx; line-height: 92rpx; }
-.category.active { border-bottom: 3rpx solid var(--cinnabar); color: #f6e7c6; }
-.add-entry { color: #e4c88f; font-size: 40rpx; font-weight: 300; }
-.clear-link-button { color: #ec9b8c; font-size: 23rpx; }
+.filter-heading,
+.filter-row,
+.manage-filter-actions {
+  display: flex;
+  align-items: center;
+}
+
+.filter-heading {
+  justify-content: space-between;
+  padding-bottom: 12rpx;
+  border-bottom: 1rpx solid rgba(222, 216, 202, 0.14);
+}
+
+.show-all-button,
+.filter-chip {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1rpx solid rgba(228, 200, 143, 0.42);
+  background: transparent;
+  color: rgba(247, 245, 239, 0.72);
+  line-height: 1;
+}
+
+.show-all-button::after,
+.filter-chip::after {
+  border: 0;
+}
+
+.show-all-button {
+  height: 52rpx;
+  padding: 0 22rpx;
+  border-radius: 26rpx;
+  font-size: 23rpx;
+  line-height: 50rpx;
+}
+
+.show-all-button.active,
+.filter-chip.active {
+  border-color: var(--gold);
+  background: rgba(182, 145, 85, 0.18);
+  color: #f6e7c6;
+  font-weight: 700;
+}
+
+.filter-status {
+  color: #ec9b8c;
+  font-size: 21rpx;
+}
+
+.filter-row {
+  min-height: 60rpx;
+  padding-top: 9rpx;
+}
+
+.filter-label {
+  flex: 0 0 110rpx;
+  color: rgba(247, 245, 239, 0.58);
+  font-size: 22rpx;
+}
+
+.filter-options,
+.zodiac-options {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.filter-chip {
+  width: 66rpx;
+  height: 44rpx;
+  border-radius: 22rpx;
+  font-size: 21rpx;
+  line-height: 42rpx;
+}
+
+.year-picker {
+  display: block;
+}
+
+.picker-value {
+  min-width: 166rpx;
+  height: 44rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid rgba(228, 200, 143, 0.42);
+  border-radius: 22rpx;
+  color: rgba(247, 245, 239, 0.72);
+  font-size: 21rpx;
+  line-height: 42rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.picker-value.active {
+  border-color: var(--gold);
+  background: rgba(182, 145, 85, 0.18);
+  color: #f6e7c6;
+  font-weight: 700;
+}
+
+.picker-arrow {
+  margin-left: 8rpx;
+  color: var(--gold);
+}
+
+.zodiac-row {
+  align-items: flex-start;
+}
+
+.zodiac-row .filter-label {
+  padding-top: 11rpx;
+}
+
+.zodiac-scroll {
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.zodiac-options {
+  width: max-content;
+  padding-right: 16rpx;
+}
+
+.manage-filter-actions {
+  justify-content: flex-end;
+  padding-top: 10rpx;
+}
+
+.clear-link-button {
+  color: #ec9b8c;
+  font-size: 22rpx;
+}
 
 .list {
   overflow: hidden;
@@ -577,7 +850,9 @@ function formatGregorian(dateText: string): string {
 .birth-date { margin-top: 10rpx; color: var(--muted); font-size: 22rpx; }
 
 .record-chart { gap: 16rpx; margin-left: 12rpx; }
-.ganzhi-lines { gap: 7rpx; color: #3c423e; font-size: 31rpx; font-weight: 700; letter-spacing: 5rpx; }
+.ganzhi-lines { gap: 7rpx; color: #3c423e; font-size: 31rpx; font-weight: 700; letter-spacing: 0; }
+.ganzhi-line { display: flex; align-items: center; gap: 5rpx; }
+.ganzhi-symbol { min-width: 31rpx; line-height: 1.08; text-align: center; }
 .chart-badge {
   width: 58rpx;
   height: 58rpx;
@@ -632,4 +907,10 @@ function formatGregorian(dateText: string): string {
 .nav-item.active::before { position: absolute; top: 0; width: 56rpx; height: 4rpx; border-radius: 99rpx; background: var(--cinnabar); content: ""; }
 .nav-icon { font-size: 32rpx; }
 .nav-text { font-size: 23rpx; font-weight: 600; }
+
+.page .wx-fire { color: #d63b32; }
+.page .wx-wood { color: #2f9e44; }
+.page .wx-metal { color: #d7a928; }
+.page .wx-water { color: #1f78d1; }
+.page .wx-earth { color: #8a5c18; }
 </style>

@@ -2,12 +2,12 @@
 
 ## 1. 当前结论
 
-当前项目已生成 Android 调试 APK。
+当前项目已生成并完成本机静态校验与 Android 模拟器回归的 `0.4.0` 调试 APK。
 
 APK 路径：
 
 ```text
-dist/apk/bazi-mvp-0.3.0-debug.apk
+dist/apk/bazi-mvp-0.4.0-debug.apk
 ```
 
 该包为本机 WebView 壳调试包，内置 H5 静态资源，使用 debug keystore 签名。APK 启动后通过 `https://appassets.androidplatform.net/index.html` 读取包内资源，由 WebView 本地拦截提供文件，不依赖外部服务器。
@@ -35,8 +35,8 @@ dist/apk/bazi-mvp-0.3.0-debug.apk
 当前 `src/manifest.json` 已配置：
 
 - 应用名：`夜琛八字`
-- 版本名：`0.3.0`
-- 版本号：`3`
+- 版本名：`0.4.0`
+- 版本号：`4`
 - AppID：`__UNI__BAZI_OFFLINE`
 - Android 权限：空权限列表
 - Android 自适应图标：金色狼月图
@@ -64,23 +64,24 @@ pnpm run build:apk:debug
 
 - 包名：`com.algernon.bazi`
 - 应用名：`夜琛八字`
-- 版本名：`0.3.0`
-- 版本号：`3`
+- 版本名：`0.4.0`
+- 版本号：`4`
 - minSdk：`23`
 - targetSdk：`36`
 - 签名：v1/v2/v3 均验证通过
 - 权限：无声明权限
-- SHA-256：`2ad1615d3a70bfb7e35a07dcf490689d7addfbdc3ba9779a808e6eaa0b84d271`
+- SHA-256：`ae60071d116e401703f865ab8ecde4032b944cbc97f599df6f8f10b5866b0fdb`
 
-本机打包资源冒烟验证：
+本机 `Medium_Phone`（Android API 37）回归结果：
 
-- 首页可加载，无“服务器未连接/无法使用”提示。
-- 首页输入姓名后可生成命盘。
-- 命盘详情可渲染命局摘要、四柱、五行分布。
-- 历史记录可读取刚生成的本地记录。
-- 单条删除直接弹确认框，不跳转命盘页。
-- 控制台无 error / warning。
-- Android 模拟器 API 37 冷启动、排盘、记录页验证通过。
+- 最终包覆盖安装成功，`firstInstallTime` 保持为 `2026-06-25 13:19:10`，既有 5 条历史记录仍可读取。
+- 最终包冷启动成功，实测 `TotalTime: 183 ms`，crash buffer 为空。
+- 历史页姓名搜索、性别筛选、属相筛选和“显示全部”清除筛选通过；出生年份筛选控件及候选年份正常加载。
+- 历史记录中的“子”应用 `wx-water`，计算色值为 `rgb(31, 120, 209)`。
+- 命盘导出 Toast 正确；复制内容不含姓名，且包含公历/农历、性别、两派身强身弱、格局、四柱明细、神煞和干支关系。
+- 未来十年流运导出 Toast 正确；复制内容覆盖 `2026—2035` 共 10 年，包含原局四柱及逐年大运、流年的主星、辅星和藏干。
+- 流年导出按钮使用 flex 居中，`align-items: center`、`justify-content: center`。
+- 最终 APK 未声明 `INTERNET` 或其他 Android 权限，且已关闭回归期间临时使用的 WebView 调试接口。
 
 安装后逐项检查：
 
@@ -93,6 +94,10 @@ pnpm run build:apk:debug
 - 姓名编辑后刷新仍保留。
 - 历史记录可查看。
 - 历史记录可搜索。
+- 历史记录可按性别、出生年份和属相筛选。
+- 历史记录干支五行颜色正确。
+- 命盘详情信息可复制到剪贴板且不含姓名。
+- 未来十年流年大运信息可复制到剪贴板。
 - 单条删除只弹确认，不跳转命盘页。
 - 清空全部正常。
 - 关闭 App 后重新打开，历史记录仍存在。
@@ -120,7 +125,7 @@ iOS 暂不建议作为第一步。Android 跑通后再处理：
 
 ## 7. 风险点
 
-- 当前 APK 已完成本机包内资源冒烟验证，仍需 Android 真机复测安装、启动和持久化存储。
+- 当前 APK 已完成本机包内资源验证和 Android API 37 模拟器回归，仍需 Android 真机复测安装、启动、剪贴板和持久化存储。
 - 当前 APK 是 WebView 壳调试包，不是 HBuilderX 原生运行时包。
 - 当前 App 端本机存储尚未在真机验证。
 - 自定义 UI 在不同屏幕宽度上仍需真机检查。

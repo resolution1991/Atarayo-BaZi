@@ -2,8 +2,8 @@
   "name": "夜琛八字",
   "appid": "__UNI__BAZI_OFFLINE",
   "description": "完全离线运行的八字排盘工具",
-  "versionName": "0.3.0",
-  "versionCode": "3",
+  "versionName": "0.4.0",
+  "versionCode": "4",
   "transformPx": false,
   "app-plus": {
     "usingComponents": true,

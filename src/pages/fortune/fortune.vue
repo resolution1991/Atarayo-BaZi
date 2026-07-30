@@ -157,6 +157,12 @@
           </view>
         </scroll-view>
       </view>
+
+      <view class="export-actions">
+        <button class="export-button" @click="exportFutureLuck">
+          导出未来10年的流年大运（含今年）信息
+        </button>
+      </view>
     </view>
 
     <view v-else class="empty">
@@ -171,6 +177,7 @@
 import { computed, ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import { buildLuckTimeline, type DaYunItem, type LiuNianItem } from "../../core/luck.ts";
+import { formatFutureLuckExport } from "../../core/fortune-export.ts";
 import type { HistoryRecord } from "../../services/history.ts";
 import { readHistory } from "../../services/history.ts";
 
@@ -271,6 +278,31 @@ function selectLiuNian(index: number) {
 
 function goBack() {
   uni.navigateBack();
+}
+
+function exportFutureLuck() {
+  const data = record.value?.data;
+  if (!data) {
+    return;
+  }
+
+  uni.setClipboardData({
+    data: formatFutureLuckExport(data),
+    showToast: false,
+    success() {
+      uni.showToast({
+        title: "已复制到剪贴板",
+        icon: "none",
+        duration: 2200,
+      });
+    },
+    fail() {
+      uni.showToast({
+        title: "复制失败，请重试",
+        icon: "none",
+      });
+    },
+  });
 }
 
 function getWuXingClass(wuXing?: string): string {
@@ -624,6 +656,31 @@ function formatLunarDay(day: number): string {
   min-height: 176rpx;
 }
 
+.export-actions {
+  padding: 26rpx 28rpx 30rpx;
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 82rpx;
+  margin: 0;
+  padding: 0 20rpx;
+  border: 1rpx solid #aa914f;
+  border-radius: 10rpx;
+  background: #ffffff;
+  color: #806b32;
+  font-size: 25rpx;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.export-button::after {
+  border: 0;
+}
+
 .empty {
   display: flex;
   flex-direction: column;
@@ -756,6 +813,18 @@ function formatLunarDay(day: number): string {
 .period-star { color: var(--cinnabar); font-size: 18rpx; }
 .month-list .fortune-period { width: 118rpx; }
 .month-period { min-height: 172rpx; }
+.export-actions { padding: 26rpx 30rpx 30rpx; }
+.export-button {
+  height: 82rpx;
+  border-color: var(--gold);
+  border-radius: 12rpx;
+  background: var(--cinnabar);
+  color: #fffdf8;
+  font-size: 25rpx;
+  font-weight: 700;
+  box-shadow: 0 8rpx 18rpx rgba(156, 54, 42, 0.16);
+}
+.export-button:active { background: var(--cinnabar-deep); }
 
 .empty { padding: 170rpx 40rpx 0; }
 .empty-title { color: var(--paper); }

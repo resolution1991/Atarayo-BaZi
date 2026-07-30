@@ -1,5 +1,33 @@
 # Development Log / 开发日志
 
+## 2026-07-30 - Version 0.4.0 / 版本 0.4.0
+
+### English
+
+- Added five-element coloring to the stems and branches shown in local history records.
+- Replaced the history category shortcut with gender, birth-year, and zodiac filters plus a clear-filter action.
+- Updated the history search placeholder to focus on the chart owner's name.
+- Added structured clipboard export on the chart page, excluding the person's name while including calendar dates, gender, both strength-school results, pattern, four pillars, stars, hidden stems, Shen Sha, and Ganzhi relations.
+- Added a second clipboard export on the Da Yun / Liu Nian page for the current year and the following nine years, including each year's active Da Yun and Liu Nian details.
+- Added deterministic tests for both export formats, including cross-Da-Yun boundaries and name-exclusion checks.
+- Added the internal offline-first version roadmap.
+- Bumped Android and project version metadata to `0.4.0` (`versionCode` 4).
+- Passed all core/rule/export tests and the H5 production build.
+- Built and verified the `0.4.0` debug APK, including v1/v2/v3 signatures, no declared Android permissions, upgrade persistence, cold start, history filtering/coloring, both clipboard exports, and an empty crash buffer on Android API 37.
+
+### 中文
+
+- 历史记录中的天干地支增加五行颜色。
+- 原历史分类快捷区替换为性别、出生年份、属相筛选及清除筛选操作。
+- 历史搜索提示调整为按命主姓名搜索。
+- 命盘页增加结构化剪贴板导出；不包含姓名，包含公历/农历、性别、两派身强身弱、格局、四柱、主辅星、藏干、神煞及干支关系。
+- 流年大运页增加从当前年起连续十年的剪贴板导出，逐年匹配实际所处大运和流年信息。
+- 为两类导出增加可复现测试，覆盖跨大运边界和姓名排除。
+- 增加内部离线优先版本演进计划。
+- 项目及 Android 版本升级为 `0.4.0`（`versionCode` 4）。
+- 全部核心、规则与导出测试通过，H5 生产构建通过。
+- 完成 `0.4.0` 调试 APK 构建与校验：v1/v2/v3 签名通过、无 Android 权限声明；并在 Android API 37 验证覆盖升级数据保留、冷启动、历史筛选与五行颜色、两项剪贴板导出，crash buffer 为空。
+
 ## 2026-07-28 - Version 0.3.0 / 版本 0.3.0
 
 ### English

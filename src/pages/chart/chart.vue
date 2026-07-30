@@ -231,6 +231,7 @@
 
       <view class="action-row">
         <button class="outline-button" @click="newChart">再排一次</button>
+        <button class="export-button" @click="exportChartInfo">导出信息</button>
         <button class="primary-button" @click="openHistory">历史记录</button>
       </view>
     </view>
@@ -251,6 +252,7 @@ import type { WuXing } from "../../core/types.ts";
 import { analyzeGanzhiRelations, type GanzhiRelation } from "../../core/relations.ts";
 import { analyzeShenSha, getShenShaDefinition, type ShenShaHit } from "../../core/shen-sha.ts";
 import { analyzeStrengthBySchool, type StrengthSchool } from "../../core/strength.ts";
+import { formatChartExport } from "../../core/chart-export.ts";
 import { readHistory, updateHistoryRecordName } from "../../services/history.ts";
 
 interface RelationLineView {
@@ -438,6 +440,31 @@ const relationLines = computed(() => {
 
 function openHistory() {
   uni.reLaunch({ url: "/pages/history/history" });
+}
+
+function exportChartInfo() {
+  const data = record.value?.data;
+  if (!data) {
+    return;
+  }
+
+  uni.setClipboardData({
+    data: formatChartExport(data),
+    showToast: false,
+    success() {
+      uni.showToast({
+        title: "该命盘信息已复制到剪贴板",
+        icon: "none",
+        duration: 2200,
+      });
+    },
+    fail() {
+      uni.showToast({
+        title: "复制失败，请重试",
+        icon: "none",
+      });
+    },
+  });
 }
 
 function toggleStrengthSchool() {
@@ -1399,12 +1426,13 @@ function formatLunarDay(day: number): string {
 
 .action-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14rpx;
   margin-top: 4rpx;
 }
 
 .outline-button,
+.export-button,
 .primary-button {
   height: 82rpx;
   border-radius: 8rpx;
@@ -1416,6 +1444,12 @@ function formatLunarDay(day: number): string {
   border: 1rpx solid #c43131;
   background: #ffffff;
   color: #c43131;
+}
+
+.export-button {
+  border: 1rpx solid #b69155;
+  background: #ffffff;
+  color: #8a682f;
 }
 
 .primary-button {
@@ -1614,8 +1648,11 @@ function formatLunarDay(day: number): string {
 
 .action-row { gap: 12rpx; margin: 4rpx 30rpx 30rpx; }
 .outline-button,
+.export-button,
 .primary-button { height: 82rpx; border-radius: 12rpx; font-size: 27rpx; line-height: 82rpx; }
 .outline-button { border-color: var(--cinnabar); background: transparent; color: var(--cinnabar); }
+.export-button { border-color: var(--gold); background: #fcfaf3; color: #8a682f; }
+.export-button:active { background: #f5eee0; }
 .primary-button { background: var(--cinnabar); color: #fffdf8; }
 .primary-button:active { background: var(--cinnabar-deep); }
 
