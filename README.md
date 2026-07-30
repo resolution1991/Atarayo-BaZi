@@ -6,13 +6,13 @@ Atarayo-BaZi 是一个离线优先的八字排盘应用，基于 uni-app、Vue 3
 
 ## Version / 版本
 
-Current baseline: `0.4.0`
+Current baseline: `0.5.0`
 
-当前基线版本：`0.4.0`
+当前基线版本：`0.5.0`
 
-This is the fourth development baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
+This is the fifth development baseline. It is suitable for functional testing, rule verification, and Android emulator or device smoke testing. It is not a commercial release build.
 
-这是第四个开发基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
+这是第五个开发基线版本，适合功能测试、规则校验、Android 模拟器或真机冒烟测试；不是正式商业发布包。
 
 ## Features / 功能
 
@@ -34,6 +34,12 @@ This is the fourth development baseline. It is suitable for functional testing, 
 - 本地历史记录支持姓名搜索、性别/年份/属相筛选、干支五行颜色、姓名编辑、单条删除与清空。
 - Clipboard export for chart details and the next ten years of Da Yun / Liu Nian information.
 - 支持将命盘详情及未来十年大运流年信息复制到剪贴板。
+- Versioned calculation settings for day rollover, Zi-hour handling, year/zodiac boundaries, display order, strength school, Shen Sha, and Ganzhi relations.
+- 排盘口径支持换日、早晚子时、年柱/生肖边界、四柱顺序、身强流派、神煞及干支关系设置。
+- Minute-level bundled solar terms drive month-pillar and luck-start calculations with a visible calculation trace.
+- 内置分钟级二十四节气表，用于月柱和起运计算，并展示完整换算过程。
+- History records preserve app/engine/data versions and a settings snapshot; legacy records are migrated without recalculation.
+- 历史记录保存应用、引擎、数据版本和设置快照；旧记录无损迁移且不自动重算。
 - Android debug APK packaging through a lightweight offline WebView shell.
 - 通过轻量离线 WebView 壳生成 Android 调试 APK。
 
@@ -129,7 +135,7 @@ Output:
 输出路径：
 
 ```text
-dist/apk/bazi-mvp-0.4.0-debug.apk
+dist/apk/bazi-mvp-0.5.0-debug.apk
 ```
 
 The APK is a debug-signed offline WebView package. H5 assets are embedded under `assets/www`, and the WebView loads `https://appassets.androidplatform.net/index.html` through local asset interception. It does not require an external server.
@@ -211,6 +217,10 @@ Some traditional items are intentionally deferred because their variants differ 
 
 `src/data/lunar-calendar.generated.ts` 由原始农历数据生成，覆盖 `1900-01-01` 至 `2100-02-08`。
 
+`src/data/solar-terms.generated.ts` contains 4,808 minute-level solar-term records generated offline with Skyfield 1.53 and JPL `de440s`, including boundary buffers from December 1899 through March 2100. See `SOLAR_TERMS_DATA.md`.
+
+`src/data/solar-terms.generated.ts` 内置 4,808 条分钟级节气记录，由 Skyfield 1.53 与 JPL `de440s` 离线生成，缓冲范围覆盖 1899 年 12 月至 2100 年 3 月。详见 `SOLAR_TERMS_DATA.md`。
+
 Generate full data:
 
 生成全量数据：
@@ -229,12 +239,18 @@ python3 tools/generate_lunar_fixture.py
 
 ## Android Validation / Android 验证
 
-The `0.4.0` debug APK was installed as an upgrade and smoke-tested on Android Studio AVD `Medium_Phone` (Android API 37). Verified:
+The `0.5.0` debug APK was installed as an upgrade and fully exercised on Android Studio AVD `Medium_Phone` (Android API 37). Verified:
 
-`0.4.0` 调试 APK 已通过覆盖升级方式安装到 Android Studio AVD `Medium_Phone`（Android API 37）并完成冒烟测试。已确认：
+`0.5.0` 调试 APK 已通过覆盖升级方式安装到 Android Studio AVD `Medium_Phone`（Android API 37）并完成端内验收。已确认：
 
-- The final APK launches cold without a crash and retains five pre-upgrade history records.
-- 最终 APK 冷启动无崩溃，并保留升级前的 5 条历史记录。
+- Five pre-upgrade records migrate to schema v2 without recalculation, retain their legacy-profile label, and have a v1 backup.
+- 升级前 5 条记录无重算迁移至 schema v2，保留旧版口径标签，并生成 v1 备份。
+- Calculation settings persist across reloads; standard-profile charting, reverse pillar display, minute-level luck-start trace, and linked manual re-charting all pass.
+- 设置重载、标准口径排盘、四柱倒序、分钟级起运过程及关联式手动重排全部通过。
+- The app cold-starts with Wi-Fi and mobile data disabled, and the final crash buffer is empty.
+- Wi-Fi 与移动数据关闭时仍可冷启动，最终 crash buffer 为空。
+- The final APK launches cold in `172 ms`, retains the original install time, and exposes no WebView debugging socket.
+- 最终 APK 冷启动耗时 `172 ms`，保留原始安装时间，且未开放 WebView 调试接口。
 - History name search, gender/zodiac filters, clear-filter action, and five-element colors work.
 - 历史姓名搜索、性别/属相筛选、清除筛选及干支五行颜色正常。
 - Chart export shows the expected toast, excludes the person's name, and includes every required section.
@@ -249,10 +265,23 @@ The `0.4.0` debug APK was installed as an upgrade and smoke-tested on Android St
 Final debug APK SHA-256 / 最终调试包 SHA-256：
 
 ```text
-ae60071d116e401703f865ab8ecde4032b944cbc97f599df6f8f10b5866b0fdb
+9484276d33ee6cd982c84b643b1cd2b38b652ca276b186e4dfb64068370917f8
 ```
 
 ## Release Notes / 发布说明
+
+### 0.5.0
+
+- Added versioned calculation profiles and a persistent calculation-settings page.
+- 新增版本化排盘口径与持久化“排盘设置”页面。
+- Added minute-level bundled solar terms for month-pillar and luck-start boundaries.
+- 增加分钟级离线节气，用于月柱与起运边界计算。
+- Added auditable calculation traces, settings snapshots, and non-destructive legacy history migration.
+- 增加计算过程、设置快照和不重算旧结果的无损历史迁移。
+- Added manual re-charting that creates a new linked record while preserving the source record.
+- 手动按当前设置重排时创建关联的新记录，并保留来源记录。
+- Added deterministic tests for settings, migration, 23:00/00:00, Li Chun, all twelve Jie boundaries, and minute-level luck start.
+- 增加设置、迁移、23点/0点、立春、十二节边界和分钟级起运测试。
 
 ### 0.4.0
 

@@ -1,5 +1,39 @@
 # Development Log / 开发日志
 
+## 2026-07-30 - Version 0.5.0 / 版本 0.5.0
+
+### English
+
+- Added a persistent calculation-settings page for day rollover, Zi-hour handling, year and zodiac boundaries, pillar display order, default strength school, Shen Sha, and Ganzhi relation rule sets.
+- Added versioned `CalculationProfile`, `CalculationSettings`, and calculation snapshot models.
+- Generated and bundled 4,808 minute-level solar-term records with Skyfield 1.53 and JPL `de440s`, including reproducible metadata and SHA-256 hashes.
+- Added profile-driven year, month, day, and hour pillar calculation while keeping the original `calculateBazi()` baseline behavior unchanged.
+- Replaced day-level luck-start estimation for new charts with minute-level Jie boundaries and a visible conversion trace.
+- Migrated legacy history records to schema v2 without recalculating their saved chart data and retained a v1 backup key.
+- Added non-destructive “re-chart with current settings” behavior that creates a linked new record.
+- Added deterministic settings, migration, solar-term, boundary, and minute-level luck-start tests.
+- Bumped project and Android metadata to `0.5.0` (`versionCode` 5).
+- Passed all 14 automated suites, the solar-term dataset verifier, the H5 production build, and whitespace checks.
+- Completed Android API 37 upgrade QA: five legacy records migrated with backup, settings persistence, reverse display, minute-level luck-start trace, and linked re-charting all passed.
+- Confirmed offline cold start with Wi-Fi and mobile data disabled, then rebuilt the final APK with WebView debugging disabled; final cold start took `172 ms` and the crash buffer was empty.
+- Built `bazi-mvp-0.5.0-debug.apk`, verified v1/v2/v3 signatures and zero declared permissions, with SHA-256 `9484276d33ee6cd982c84b643b1cd2b38b652ca276b186e4dfb64068370917f8`.
+
+### 中文
+
+- 新增持久化排盘设置页，支持换日、早晚子时、年柱与生肖边界、四柱顺序、默认身强流派、神煞和干支关系规则集。
+- 新增版本化 `CalculationProfile`、`CalculationSettings` 和计算快照模型。
+- 使用 Skyfield 1.53 与 JPL `de440s` 生成并内置 4,808 条分钟级节气记录，保存可复现元数据及 SHA-256。
+- 新增 profile 驱动的年月日时四柱计算，同时保持原 `calculateBazi()` 基准行为不变。
+- 新命盘的起运从日级估算升级为分钟级“节”边界，并展示完整换算过程。
+- 旧历史记录无重算迁移至 schema v2，同时保留 v1 备份 key。
+- “按当前设置重排”创建关联的新记录，不覆盖来源记录。
+- 增加设置、迁移、节气、时间边界和分钟级起运自动化测试。
+- 项目及 Android 版本升级为 `0.5.0`（`versionCode` 5）。
+- 14 组自动化测试、节气数据校验、H5 生产构建及空白字符检查全部通过。
+- 完成 Android API 37 覆盖升级验收：5 条旧记录带备份迁移，设置持久化、四柱倒序、分钟级起运过程和关联式重排均通过。
+- 关闭 Wi-Fi 与移动数据后离线冷启动通过；随后移除 WebView 调试开关并重建最终 APK，最终冷启动耗时 `172 ms`，crash buffer 为空。
+- 生成 `bazi-mvp-0.5.0-debug.apk`，v1/v2/v3 签名通过、Android 权限声明为空，SHA-256 为 `9484276d33ee6cd982c84b643b1cd2b38b652ca276b186e4dfb64068370917f8`。
+
 ## 2026-07-30 - Version 0.4.0 / 版本 0.4.0
 
 ### English

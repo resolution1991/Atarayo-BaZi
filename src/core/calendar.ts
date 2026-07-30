@@ -1,11 +1,18 @@
 import {
   BaziValueError,
   type LunarCalendarEntry,
+  type LunarCalendarMap,
   type LunarCalendarSource,
   type LunarInfo,
   type ParsedDateTime,
 } from "./types.ts";
 import { EARTHLY_BRANCHES, HEAVENLY_STEMS } from "./rules.ts";
+import type {
+  CalculationSettings,
+  DayBoundary,
+  ZiHourMode,
+} from "./calculation-profile.ts";
+import type { SolarTermLookup, SolarTermRecord } from "./solar-terms.ts";
 
 export function normalizeBirthDateTime(value: string): string {
   if (value.includes("T") && value.includes(":")) {
@@ -107,7 +114,7 @@ export function getShichenGanzhi(dayGan: string, hour: number): string {
 
 export function getLunarInfo(dt: ParsedDateTime, lunarData: LunarCalendarSource): LunarInfo {
   const dateKey = dt.hour >= 23 ? formatDate(addDays(dt, 1)) : formatDate(dt);
-  const data = getLunarCalendarEntry(lunarData, dateKey);
+  const data = lookupLunarCalendarEntry(lunarData, dateKey);
   if (!data) {
     throw new BaziValueError(`日期 ${dateKey} 不在农历数据范围内`);
   }
@@ -122,17 +129,148 @@ export function getLunarInfo(dt: ParsedDateTime, lunarData: LunarCalendarSource)
   };
 }
 
+export interface ResolvedPillars {
+  lunarDate: string;
+  zodiac: string;
+  yearGanzhi: string;
+  monthGanzhi: string;
+  dayGanzhi: string;
+  hourGanzhi: string;
+  effectiveDate: string;
+  dayRolled: boolean;
+  previousJie: SolarTermRecord;
+  nextJie: SolarTermRecord;
+  yearBoundaryAt: string;
+  hourDayStemSource: "effective-day" | "civil-day";
+}
+
+const JIE_TO_MONTH_INDEX: Record<string, number> = {
+  立春: 0,
+  惊蛰: 1,
+  清明: 2,
+  立夏: 3,
+  芒种: 4,
+  小暑: 5,
+  立秋: 6,
+  白露: 7,
+  寒露: 8,
+  立冬: 9,
+  大雪: 10,
+  小寒: 11,
+};
+const ZODIAC_BY_BRANCH: Record<string, string> = {
+  子: "鼠",
+  丑: "牛",
+  寅: "虎",
+  卯: "兔",
+  辰: "龙",
+  巳: "蛇",
+  午: "马",
+  未: "羊",
+  申: "猴",
+  酉: "鸡",
+  戌: "狗",
+  亥: "猪",
+};
+
+export function resolvePillars(
+  dt: ParsedDateTime,
+  lunarData: LunarCalendarSource,
+  solarTerms: SolarTermLookup,
+  settings: CalculationSettings,
+): ResolvedPillars {
+  const civilDateKey = formatDate(dt);
+  const civilEntry = lookupLunarCalendarEntry(lunarData, civilDateKey);
+  if (!civilEntry) {
+    throw new BaziValueError(`日期 ${civilDateKey} 不在农历数据范围内`);
+  }
+
+  const { dateKey: effectiveDate, rolled: dayRolled } = resolveEffectiveDate(dt, settings.dayBoundary);
+  const effectiveEntry = lookupLunarCalendarEntry(lunarData, effectiveDate);
+  if (!effectiveEntry) {
+    throw new BaziValueError(`日期 ${effectiveDate} 不在农历数据范围内`);
+  }
+
+  const epochMinute = cstParsedDateTimeToEpochMinute(dt);
+  const jieWindow = solarTerms.findWindow(epochMinute, "jie");
+  const lichun = solarTerms.findByNameAndYear("立春", dt.year);
+  if (!lichun) {
+    throw new BaziValueError(`缺少 ${dt.year} 年立春节气数据`);
+  }
+  const lichunYear = epochMinute >= lichun.epochMinute ? dt.year : dt.year - 1;
+  const lichunYearGanzhi = getYearGanzhi(lichunYear);
+  const yearGanzhi =
+    settings.yearBoundary === "lichun" ? lichunYearGanzhi : civilEntry.ganzhi_year;
+  const zodiacGanzhi =
+    settings.zodiacBoundary === "lichun" ? lichunYearGanzhi : civilEntry.ganzhi_year;
+  const monthGanzhi = getMonthGanzhi(yearGanzhi[0], jieWindow.previous.name);
+
+  const hourUsesCivilDay = settings.ziHourMode === "split" && dt.hour === 23;
+  const hourDayStem = hourUsesCivilDay ? civilEntry.ganzhi_day[0] : effectiveEntry.ganzhi_day[0];
+
+  return {
+    lunarDate: `${civilEntry.lunar_year}年${civilEntry.lunar_month}月${civilEntry.lunar_day}日`,
+    zodiac: ZODIAC_BY_BRANCH[zodiacGanzhi[1]] ?? "",
+    yearGanzhi,
+    monthGanzhi,
+    dayGanzhi: effectiveEntry.ganzhi_day,
+    hourGanzhi: getShichenGanzhi(hourDayStem, dt.hour),
+    effectiveDate,
+    dayRolled,
+    previousJie: jieWindow.previous,
+    nextJie: jieWindow.next,
+    yearBoundaryAt:
+      settings.yearBoundary === "lichun" ? lichun.cst : findLunarNewYearBoundary(dt.year, lunarData),
+    hourDayStemSource: hourUsesCivilDay ? "civil-day" : "effective-day",
+  };
+}
+
+export function resolveEffectiveDate(
+  dt: ParsedDateTime,
+  boundary: DayBoundary,
+): { dateKey: string; rolled: boolean } {
+  const rolled = boundary === "zi-begin" && dt.hour >= 23;
+  return {
+    dateKey: rolled ? formatDate(addDays(dt, 1)) : formatDate(dt),
+    rolled,
+  };
+}
+
+export function getYearGanzhi(year: number): string {
+  const offset = year - 4;
+  return `${HEAVENLY_STEMS[positiveModulo(offset, 10)]}${EARTHLY_BRANCHES[positiveModulo(offset, 12)]}`;
+}
+
+export function getMonthGanzhi(yearStem: string, jieName: string): string {
+  const monthIndex = JIE_TO_MONTH_INDEX[jieName];
+  if (!Number.isInteger(monthIndex)) {
+    throw new BaziValueError(`无法由节气确定月柱: ${jieName}`);
+  }
+  const firstMonthStem = getFirstMonthStemIndex(yearStem);
+  const stem = HEAVENLY_STEMS[(firstMonthStem + monthIndex) % 10];
+  const branch = EARTHLY_BRANCHES[(EARTHLY_BRANCHES.indexOf("寅") + monthIndex) % 12];
+  return `${stem}${branch}`;
+}
+
+export function cstParsedDateTimeToEpochMinute(dt: ParsedDateTime): number {
+  return Math.floor(Date.UTC(dt.year, dt.month - 1, dt.day, dt.hour - 8, dt.minute) / 60000);
+}
+
+export function describeZiHourMode(mode: ZiHourMode): string {
+  return mode === "split" ? "早晚子时拆分" : "统一子时";
+}
+
 export function dayOfYear(year: number, month: number, day: number): number {
   const start = Date.UTC(year, 0, 1);
   const current = Date.UTC(year, month - 1, day);
   return Math.floor((current - start) / 86400000) + 1;
 }
 
-function getLunarCalendarEntry(source: LunarCalendarSource, dateKey: string): LunarCalendarEntry | undefined {
+export function lookupLunarCalendarEntry(source: LunarCalendarSource, dateKey: string): LunarCalendarEntry | undefined {
   if ("get" in source && typeof source.get === "function") {
     return source.get(dateKey);
   }
-  return source[dateKey];
+  return (source as LunarCalendarMap)[dateKey];
 }
 
 function formatDate(dt: Pick<ParsedDateTime, "year" | "month" | "day">): string {
@@ -156,4 +294,34 @@ function daysInMonth(year: number, month: number): number {
 
 function pad2(value: number): string {
   return String(value).padStart(2, "0");
+}
+
+function getFirstMonthStemIndex(yearStem: string): number {
+  if (yearStem === "甲" || yearStem === "己") return HEAVENLY_STEMS.indexOf("丙");
+  if (yearStem === "乙" || yearStem === "庚") return HEAVENLY_STEMS.indexOf("戊");
+  if (yearStem === "丙" || yearStem === "辛") return HEAVENLY_STEMS.indexOf("庚");
+  if (yearStem === "丁" || yearStem === "壬") return HEAVENLY_STEMS.indexOf("壬");
+  return HEAVENLY_STEMS.indexOf("甲");
+}
+
+function findLunarNewYearBoundary(year: number, lunarData: LunarCalendarSource): string {
+  const start = new Date(Date.UTC(year, 0, 1));
+  for (let offset = 0; offset < 60; offset += 1) {
+    const date = new Date(start.getTime());
+    date.setUTCDate(date.getUTCDate() + offset);
+    const dateKey = [
+      date.getUTCFullYear(),
+      String(date.getUTCMonth() + 1).padStart(2, "0"),
+      String(date.getUTCDate()).padStart(2, "0"),
+    ].join("-");
+    const entry = lookupLunarCalendarEntry(lunarData, dateKey);
+    if (entry?.lunar_month === 1 && entry.lunar_day === 1) {
+      return `${dateKey} 00:00`;
+    }
+  }
+  return `${year}-01-01 00:00`;
+}
+
+function positiveModulo(value: number, divisor: number): number {
+  return ((value % divisor) + divisor) % divisor;
 }

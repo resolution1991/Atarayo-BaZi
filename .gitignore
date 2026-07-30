@@ -4,5 +4,6 @@ unpackage/
 .hbuilderx/
 .idea/
 .DS_Store
+.pnpm-store/
 __pycache__/
 *.pyc

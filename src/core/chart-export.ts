@@ -2,6 +2,7 @@ import type { BaziData, PillarName } from "./types.ts";
 import { analyzeGanzhiRelations, type GanzhiRelation } from "./relations.ts";
 import { analyzeShenSha } from "./shen-sha.ts";
 import { analyzeStrengthBySchool } from "./strength.ts";
+import type { CalculationSettings } from "./calculation-profile.ts";
 
 const PILLARS: Array<{ key: PillarName; label: string }> = [
   { key: "year", label: "年柱" },
@@ -17,10 +18,12 @@ const PILLAR_LABELS: Record<PillarName, string> = {
   hour: "时柱",
 };
 
-export function formatChartExport(data: BaziData): string {
+export function formatChartExport(data: BaziData, settings?: CalculationSettings): string {
   const info = data.person.birth_info;
-  const shenSha = analyzeShenSha(data);
-  const relations = analyzeGanzhiRelations(data);
+  const shenShaEnabled = settings?.shenSha.enabled !== false;
+  const relationsEnabled = settings?.relations.enabled !== false;
+  const shenSha = shenShaEnabled ? analyzeShenSha(data) : null;
+  const relations = relationsEnabled ? analyzeGanzhiRelations(data) : [];
   const traditionalStrength = analyzeStrengthBySchool(data, "traditional");
   const academicStrength = analyzeStrengthBySchool(data, "academic");
 
@@ -47,7 +50,7 @@ export function formatChartExport(data: BaziData): string {
       `主星：${pillar.heavenly_stem.shi_shen || "-"}`,
       `辅星：${formatList(hiddenStems.map((hidden) => hidden.shi_shen || "-"))}`,
       `藏干：${formatList(hiddenStems.map((hidden) => hidden.symbol))}`,
-      `神煞：${formatList(shenSha[key].map((item) => item.name))}`,
+      `神煞：${shenSha ? formatList(shenSha[key].map((item) => item.name)) : "未启用"}`,
     );
     if (index < PILLARS.length - 1) {
       lines.push("");
@@ -59,10 +62,10 @@ export function formatChartExport(data: BaziData): string {
   lines.push(
     "",
     "【天干作用关系】",
-    ...formatRelations(stemRelations),
+    ...(relationsEnabled ? formatRelations(stemRelations) : ["未启用"]),
     "",
     "【地支作用关系】",
-    ...formatRelations(branchRelations),
+    ...(relationsEnabled ? formatRelations(branchRelations) : ["未启用"]),
   );
 
   return lines.join("\n");

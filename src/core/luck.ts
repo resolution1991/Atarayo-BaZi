@@ -2,6 +2,8 @@ import { getLunarCalendarEntry } from "../data/lunar-calendar.ts";
 import { determineShiShen } from "./shi-shen.ts";
 import type { BaziData, Gender, HiddenStemNode, WuXing } from "./types.ts";
 import { EARTHLY_BRANCHES, HEAVENLY_STEMS, getBranchRule, getStemRule } from "./rules.ts";
+import type { SolarTermLookup } from "./solar-terms.ts";
+import { cstDateTimeToEpochMinute } from "./solar-terms.ts";
 
 export interface LuckStartInfo {
   isForward: boolean;
@@ -12,7 +14,11 @@ export interface LuckStartInfo {
   startSolar: string;
   sourceJie: SolarTermPoint;
   targetJie: SolarTermPoint;
-  precision: "day";
+  previousJie?: SolarTermPoint;
+  nextJie?: SolarTermPoint;
+  differenceMinutes?: number;
+  conversionText?: string;
+  precision: "day" | "minute";
 }
 
 export interface SolarTermPoint {
@@ -106,10 +112,14 @@ const JIE_BY_MONTH_BRANCH: Record<string, string> = {
   丑: "小寒",
 };
 
-export function buildLuckTimeline(data: BaziData, daYunCount = 10): LuckTimeline {
+export function buildLuckTimeline(
+  data: BaziData,
+  daYunCount = 10,
+  solarTerms?: SolarTermLookup,
+): LuckTimeline {
   const birthDate = parseBirthDateTime(data);
   const dayStem = data.person.birth_info.day.heavenly_stem.symbol;
-  const start = calculateLuckStart(data);
+  const start = calculateLuckStart(data, solarTerms);
   const birthYear = birthDate.getUTCFullYear();
   const startSolarDate = addLuckStart(birthDate, start);
   const startSolarYear = startSolarDate.getUTCFullYear();
@@ -124,7 +134,7 @@ export function buildLuckTimeline(data: BaziData, daYunCount = 10): LuckTimeline
     const startYear = startSolarYear + (index - 1) * 10;
     const startAge = startYear - birthYear + 1;
     const ganZhi = getDaYunGanZhi(data.person.birth_info.month.heavenly_stem.symbol + data.person.birth_info.month.earthly_branch.symbol, index, start.isForward);
-    daYun.push(makeDaYunItem(data, dayStem, index, ganZhi, startYear, startYear + 9, startAge));
+    daYun.push(makeDaYunItem(data, dayStem, index, ganZhi, startYear, startYear + 9, startAge, solarTerms));
   }
 
   return {
@@ -138,7 +148,10 @@ export function buildLuckTimeline(data: BaziData, daYunCount = 10): LuckTimeline
   };
 }
 
-export function calculateLuckStart(data: BaziData): LuckStartInfo {
+export function calculateLuckStart(data: BaziData, solarTerms?: SolarTermLookup): LuckStartInfo {
+  if (solarTerms) {
+    return calculateMinuteLuckStart(data, solarTerms);
+  }
   const birthInfo = data.person.birth_info;
   const birthDate = parseBirthDateTime(data);
   const isForward = isDaYunForward(birthInfo.year.heavenly_stem.symbol, data.person.gender);
@@ -178,10 +191,18 @@ function makeDaYunItem(
   startYear: number,
   endYear: number,
   startAge: number,
+  solarTerms?: SolarTermLookup,
 ): DaYunItem {
   const endAge = startAge + (endYear - startYear);
   const liuNian = Array.from({ length: endYear - startYear + 1 }, (_, liuNianIndex) =>
-    makeLiuNian(data, dayStem, startYear + liuNianIndex, startAge + liuNianIndex, liuNianIndex),
+    makeLiuNian(
+      data,
+      dayStem,
+      startYear + liuNianIndex,
+      startAge + liuNianIndex,
+      liuNianIndex,
+      solarTerms,
+    ),
   );
   return {
     index,
@@ -203,6 +224,7 @@ function makeLiuNian(
   year: number,
   age: number,
   index: number,
+  solarTerms?: SolarTermLookup,
 ): LiuNianItem {
   const ganZhi = getYearGanZhi(year);
   return {
@@ -212,11 +234,16 @@ function makeLiuNian(
     ganZhi,
     stem: makeLuckStem(dayStem, ganZhi[0]),
     branch: makeLuckBranch(dayStem, ganZhi[1]),
-    liuYue: makeLiuYue(dayStem, year, ganZhi),
+    liuYue: makeLiuYue(dayStem, year, ganZhi, solarTerms),
   };
 }
 
-function makeLiuYue(dayStem: string, year: number, yearGanZhi: string): LiuYueItem[] {
+function makeLiuYue(
+  dayStem: string,
+  year: number,
+  yearGanZhi: string,
+  solarTerms?: SolarTermLookup,
+): LiuYueItem[] {
   const startStemIndex = getFirstMonthStemIndex(yearGanZhi[0]);
   return MONTH_BRANCHES.map((branch, index) => {
     const stem = HEAVENLY_STEMS[(startStemIndex + index) % HEAVENLY_STEMS.length];
@@ -225,7 +252,9 @@ function makeLiuYue(dayStem: string, year: number, yearGanZhi: string): LiuYueIt
     return {
       index,
       term: term.name,
-      date: `${term.month}/${term.day}`,
+      date: solarTerms
+        ? formatTermMonthDay(solarTerms.findByNameAndYear(term.name, year)?.cst, term)
+        : `${term.month}/${term.day}`,
       ganZhi,
       stem: makeLuckStem(dayStem, stem),
       branch: makeLuckBranch(dayStem, branch),
@@ -373,4 +402,61 @@ function formatDateTime(date: Date): string {
 
 function positiveModulo(value: number, divisor: number): number {
   return ((value % divisor) + divisor) % divisor;
+}
+
+function calculateMinuteLuckStart(data: BaziData, solarTerms: SolarTermLookup): LuckStartInfo {
+  const birthInfo = data.person.birth_info;
+  const birthCst = `${birthInfo.gregorian_date} ${birthInfo.birth_time}`;
+  const birthEpochMinute = cstDateTimeToEpochMinute(birthCst);
+  const window = solarTerms.findWindow(birthEpochMinute, "jie");
+  const isForward = isDaYunForward(birthInfo.year.heavenly_stem.symbol, data.person.gender);
+  const differenceMinutes = isForward
+    ? window.next.epochMinute - birthEpochMinute
+    : birthEpochMinute - window.previous.epochMinute;
+  const startParts = convertMinutesToLuckStart(Math.max(0, differenceMinutes));
+  const birthDate = parseBirthDateTime(data);
+  const startSolar = formatDateTime(addLuckStart(birthDate, startParts));
+  const source = isForward ? birthCst : window.previous.cst;
+  const target = isForward ? window.next.cst : birthCst;
+
+  return {
+    ...startParts,
+    isForward,
+    startSolar,
+    sourceJie: {
+      name: isForward ? "出生时间" : window.previous.name,
+      dateTime: source,
+    },
+    targetJie: {
+      name: isForward ? window.next.name : "出生时间",
+      dateTime: target,
+    },
+    previousJie: { name: window.previous.name, dateTime: window.previous.cst },
+    nextJie: { name: window.next.name, dateTime: window.next.cst },
+    differenceMinutes,
+    conversionText: formatLuckConversion(differenceMinutes, startParts),
+    precision: "minute",
+  };
+}
+
+function formatLuckConversion(
+  minutes: number,
+  parts: Pick<LuckStartInfo, "startYear" | "startMonth" | "startDay" | "startHour">,
+): string {
+  return [
+    `总计 ${minutes} 分钟`,
+    `4320分=1年，360分=1月，12分=1日，1分=2小时`,
+    `换算为 ${parts.startYear}年${parts.startMonth}月${parts.startDay}日${parts.startHour}小时`,
+  ].join("；");
+}
+
+function formatTermMonthDay(
+  cst: string | undefined,
+  fallback: { month: number; day: number },
+): string {
+  if (!cst) {
+    return `${fallback.month}/${fallback.day}`;
+  }
+  const match = cst.match(/^\d{4}-(\d{2})-(\d{2})/);
+  return match ? `${Number(match[1])}/${Number(match[2])}` : `${fallback.month}/${fallback.day}`;
 }

@@ -86,6 +86,9 @@
             <text class="gender">{{ record.data.person.gender }}</text>
           </view>
           <text class="birth-date">{{ formatGregorian(record.data.person.birth_info.gregorian_date) }}</text>
+          <text :class="['profile-tag', record.calculation.profileId === 'legacy-v0.4' ? 'legacy' : '']">
+            {{ record.calculation.profileLabel }}
+          </text>
         </view>
 
         <view class="record-chart">
@@ -135,6 +138,10 @@
       <view class="nav-item active">
         <text class="nav-icon">≡</text>
         <text class="nav-text">记录</text>
+      </view>
+      <view class="nav-item" @click="openSettings">
+        <text class="nav-icon">⚙</text>
+        <text class="nav-text">设置</text>
       </view>
     </view>
   </view>
@@ -196,7 +203,10 @@ const filteredRecords = computed(() => {
       (!keyword || getSearchText(record).includes(keyword)) &&
       (!selectedGender.value || record.data.person.gender === selectedGender.value) &&
       (!selectedYear.value || info.gregorian_date.startsWith(`${selectedYear.value}-`)) &&
-      (!selectedZodiac.value || info.year.earthly_branch.symbol === selectedZodiac.value)
+      (!selectedZodiac.value ||
+        (info.zodiac
+          ? info.zodiac === zodiacOptions.find((item) => item.branch === selectedZodiac.value)?.label
+          : info.year.earthly_branch.symbol === selectedZodiac.value))
     );
   });
 });
@@ -222,6 +232,10 @@ function handleRecordClick(id: string) {
 
 function createRecord() {
   uni.reLaunch({ url: "/pages/index/index" });
+}
+
+function openSettings() {
+  uni.reLaunch({ url: "/pages/settings/settings" });
 }
 
 function toggleManageMode() {
@@ -297,12 +311,20 @@ function getBranchLine(record: HistoryRecord): string {
 
 function getStemItems(record: HistoryRecord) {
   const info = record.data.person.birth_info;
-  return [info.year, info.month, info.day, info.hour].map((pillar) => pillar.heavenly_stem);
+  const pillars = [info.year, info.month, info.day, info.hour];
+  if (record.calculation.settings.pillarDisplayOrder === "hour-to-year") {
+    pillars.reverse();
+  }
+  return pillars.map((pillar) => pillar.heavenly_stem);
 }
 
 function getBranchItems(record: HistoryRecord) {
   const info = record.data.person.birth_info;
-  return [info.year, info.month, info.day, info.hour].map((pillar) => pillar.earthly_branch);
+  const pillars = [info.year, info.month, info.day, info.hour];
+  if (record.calculation.settings.pillarDisplayOrder === "hour-to-year") {
+    pillars.reverse();
+  }
+  return pillars.map((pillar) => pillar.earthly_branch);
 }
 
 function getWuXingClass(wuXing?: string, symbol?: string): string {
@@ -490,6 +512,22 @@ function formatGregorian(dateText: string): string {
   color: #b5b5b5;
   font-size: 28rpx;
   line-height: 1.2;
+}
+
+.profile-tag {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 8rpx;
+  padding: 3rpx 10rpx;
+  border-radius: 99rpx;
+  background: #eef5ef;
+  color: #55705b;
+  font-size: 19rpx;
+}
+
+.profile-tag.legacy {
+  background: #f4f0e6;
+  color: #8b7438;
 }
 
 .record-chart {

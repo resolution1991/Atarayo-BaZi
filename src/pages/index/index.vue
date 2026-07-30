@@ -73,6 +73,7 @@
 
       <view class="rule-line">
         <text>排盘口径：{{ calendarMode === "solar" ? "公历" : "农历" }}出生时间 · 北京时间</text>
+        <text>{{ settingsSummary }}</text>
         <text v-if="calendarMode === 'lunar' && resolvedGregorianDate">换算公历：{{ resolvedGregorianDate }} {{ time }}</text>
       </view>
 
@@ -117,17 +118,31 @@
         <text class="nav-icon">≡</text>
         <text class="nav-text">记录</text>
       </view>
+      <view class="nav-item" @click="openSettings">
+        <text class="nav-icon">⚙</text>
+        <text class="nav-text">设置</text>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
-import { calculateBazi } from "../../core/calculate.ts";
+import { onShow } from "@dcloudio/uni-app";
+import { calculateBaziWithProfile } from "../../core/calculate.ts";
+import {
+  APP_VERSION,
+  ENGINE_VERSION,
+  SOLAR_TERM_DATA_VERSION,
+  createStandardProfile,
+  describeCalculationSettings,
+} from "../../core/calculation-profile.ts";
 import { EARTHLY_BRANCHES, HEAVENLY_STEMS } from "../../core/rules.ts";
 import type { Gender, Pillar } from "../../core/types.ts";
 import { findGregorianDatesByLunar, LUNAR_CALENDAR } from "../../data/lunar-calendar.ts";
-import { saveHistory } from "../../services/history.ts";
+import { SOLAR_TERM_LOOKUP } from "../../data/solar-terms.ts";
+import { saveCalculatedHistory } from "../../services/history.ts";
+import { readCalculationSettings } from "../../services/settings.ts";
 
 const genderOptions: Gender[] = ["男", "女"];
 const calendarOptions = [
@@ -164,6 +179,18 @@ const form = reactive({
   name: "",
   gender: "男" as Gender,
 });
+const calculationSettings = ref(readCalculationSettings());
+const calculationContext = {
+  lunarData: LUNAR_CALENDAR,
+  solarTerms: SOLAR_TERM_LOOKUP,
+  appVersion: APP_VERSION,
+  engineVersion: ENGINE_VERSION,
+  solarTermDataVersion: SOLAR_TERM_DATA_VERSION,
+};
+
+onShow(() => {
+  calculationSettings.value = readCalculationSettings();
+});
 
 const lunarYearOptions = computed(() => lunarYears.map((year) => `${formatLunarYear(Number(year))}年`));
 const lunarYearIndex = computed(() => Math.max(0, lunarYears.indexOf(String(lunarYear.value))));
@@ -186,11 +213,12 @@ const previewErrorText = computed(() => {
 
 const previewData = computed(() => {
   try {
-    return calculateCurrentChart();
+    return calculateCurrentChart().data;
   } catch {
     return null;
   }
 });
+const settingsSummary = computed(() => describeCalculationSettings(calculationSettings.value));
 
 const previewPillars = computed<Pillar[]>(() => {
   const info = previewData.value?.person.birth_info;
@@ -210,7 +238,7 @@ const previewLunarDate = computed(() => {
 
   const [, year, month, day] = match;
   const ganzhi = `${info.year.heavenly_stem.symbol}${info.year.earthly_branch.symbol}`;
-  const zodiac = zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
+  const zodiac = info.zodiac ?? zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
   return `${year}（${ganzhi}${zodiac}）年 ${formatLunarMonth(Number(month))} ${formatLunarDay(Number(day))}`;
 });
 
@@ -328,19 +356,22 @@ function calculateCurrentChart() {
   if (!gregorianDate) {
     throw new Error(previewErrorText.value);
   }
-  return calculateBazi(
+  return calculateBaziWithProfile(
     {
       name: form.name.trim() || "未命名",
       gender: form.gender,
       birth_datetime: `${gregorianDate}-${time.value.replace(/:/g, "-")}`,
     },
-    LUNAR_CALENDAR,
+    calculationContext,
+    createStandardProfile(calculationSettings.value),
   );
 }
 
 function generateChart() {
   try {
-    const record = saveHistory(calculateCurrentChart());
+    const profile = createStandardProfile(calculationSettings.value);
+    const calculated = calculateCurrentChart();
+    const record = saveCalculatedHistory(calculated, profile);
     uni.navigateTo({
       url: `/pages/chart/chart?id=${record.id}`,
     });
@@ -352,6 +383,10 @@ function generateChart() {
 
 function openHistory() {
   uni.reLaunch({ url: "/pages/history/history" });
+}
+
+function openSettings() {
+  uni.reLaunch({ url: "/pages/settings/settings" });
 }
 
 function getWuXingClass(wuXing?: string): string {

@@ -39,6 +39,14 @@
         "navigationBarBackgroundColor": "#12212a",
         "navigationBarTextStyle": "white"
       }
+    },
+    {
+      "path": "pages/settings/settings",
+      "style": {
+        "navigationBarTitleText": "排盘设置",
+        "navigationBarBackgroundColor": "#12212a",
+        "navigationBarTextStyle": "white"
+      }
     }
   ],
   "globalStyle": {

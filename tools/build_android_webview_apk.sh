@@ -10,8 +10,8 @@ export JAVA_HOME="$JBR_HOME"
 export PATH="$JBR_HOME/bin:$PATH"
 
 APP_ID="com.algernon.bazi"
-VERSION_NAME="0.4.0"
-VERSION_CODE="4"
+VERSION_NAME="0.5.0"
+VERSION_CODE="5"
 
 SHELL_DIR="$ROOT_DIR/android-webview-shell"
 H5_DIR="$ROOT_DIR/dist/build/h5"
@@ -115,7 +115,7 @@ if [ ! -f "$KEYSTORE" ]; then
     -dname "CN=Android Debug,O=Android,C=US" >/dev/null
 fi
 
-APK_PATH="$OUT_DIR/bazi-mvp-0.4.0-debug.apk"
+APK_PATH="$OUT_DIR/bazi-mvp-0.5.0-debug.apk"
 "$APKSIGNER" sign \
   --ks "$KEYSTORE" \
   --ks-pass pass:android \

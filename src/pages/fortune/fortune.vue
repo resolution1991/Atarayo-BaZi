@@ -100,7 +100,24 @@
       <view class="start-card">
         <text>起运：出生后{{ startText }}起运</text>
         <text>方向：{{ timeline.start.isForward ? "顺行" : "逆行" }} · 节点：{{ timeline.start.sourceJie.name }} 至 {{ timeline.start.targetJie.name }}</text>
-        <text class="precision-note">当前按本地日级节令数据估算，后续可替换分钟级节气表。</text>
+        <text class="precision-note">
+          {{ timeline.start.precision === "minute" ? "分钟级离线节气" : "旧版日级节令" }} ·
+          {{ record.calculation.profileLabel }}
+        </text>
+        <button class="start-detail-toggle" @click="startExpanded = !startExpanded">
+          {{ startExpanded ? "收起计算过程" : "查看起运计算过程" }}
+        </button>
+        <view v-if="startExpanded" class="start-detail">
+          <text>出生时间：{{ birthInfo?.gregorian_date }} {{ birthInfo?.birth_time }}</text>
+          <text v-if="timeline.start.previousJie">前一节：{{ timeline.start.previousJie.name }} {{ timeline.start.previousJie.dateTime }}</text>
+          <text v-if="timeline.start.nextJie">后一节：{{ timeline.start.nextJie.name }} {{ timeline.start.nextJie.dateTime }}</text>
+          <text>计算区间：{{ timeline.start.sourceJie.dateTime }} → {{ timeline.start.targetJie.dateTime }}</text>
+          <text v-if="timeline.start.differenceMinutes !== undefined">时间差：{{ timeline.start.differenceMinutes }} 分钟</text>
+          <text v-if="timeline.start.conversionText">{{ timeline.start.conversionText }}</text>
+          <text>起运时间：{{ timeline.start.startSolar }}</text>
+          <text>引擎：{{ record.calculation.engineVersion }}</text>
+          <text>节气数据：{{ record.calculation.solarTermDataVersion }}</text>
+        </view>
       </view>
 
       <view class="timeline-card">
@@ -180,10 +197,12 @@ import { buildLuckTimeline, type DaYunItem, type LiuNianItem } from "../../core/
 import { formatFutureLuckExport } from "../../core/fortune-export.ts";
 import type { HistoryRecord } from "../../services/history.ts";
 import { readHistory } from "../../services/history.ts";
+import { SOLAR_TERM_LOOKUP } from "../../data/solar-terms.ts";
 
 const record = ref<HistoryRecord | null>(null);
 const selectedDaYunListIndex = ref(0);
 const selectedLiuNianIndex = ref(0);
+const startExpanded = ref(false);
 
 onLoad((query) => {
   const id = query?.id;
@@ -192,12 +211,14 @@ onLoad((query) => {
 });
 
 const birthInfo = computed(() => record.value?.data.person.birth_info ?? null);
-const timeline = computed(() => (record.value ? buildLuckTimeline(record.value.data) : null));
+const timeline = computed(() => (record.value ? buildRecordTimeline(record.value) : null));
 const selectedDaYun = computed<DaYunItem | null>(() => timeline.value?.daYun[selectedDaYunListIndex.value] ?? null);
 const selectedLiuNian = computed<LiuNianItem | null>(() => selectedDaYun.value?.liuNian[selectedLiuNianIndex.value] ?? null);
 const zodiacText = computed(() => {
-  const branch = birthInfo.value?.year.earthly_branch.symbol;
-  return branch ? `属${zodiacByBranch[branch] ?? branch}` : "-";
+  const info = birthInfo.value;
+  const branch = info?.year.earthly_branch.symbol;
+  const zodiac = info?.zodiac ?? (branch ? zodiacByBranch[branch] ?? branch : "");
+  return zodiac ? `属${zodiac}` : "-";
 });
 const startText = computed(() => {
   const start = timeline.value?.start;
@@ -218,7 +239,7 @@ const formattedLunarDate = computed(() => {
   }
 
   const yearGanzhi = `${info.year.heavenly_stem.symbol}${info.year.earthly_branch.symbol}`;
-  const zodiac = zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
+  const zodiac = info.zodiac ?? zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
   const yearText = zodiac ? `${parsed.year}（${yearGanzhi}-${zodiac}）年` : `${parsed.year}（${yearGanzhi}）年`;
   return `${yearText} ${formatLunarMonth(parsed.month)} ${formatLunarDay(parsed.day)}`;
 });
@@ -227,12 +248,16 @@ const pillarColumns = computed(() => {
   if (!info) {
     return [];
   }
-  return [
+  const values = [
     { key: "year", label: "年柱", data: info.year },
     { key: "month", label: "月柱", data: info.month },
     { key: "day", label: "日柱", data: info.day },
     { key: "hour", label: "时柱", data: info.hour },
-  ].map((pillar) => ({
+  ];
+  if (record.value?.calculation.settings.pillarDisplayOrder === "hour-to-year") {
+    values.reverse();
+  }
+  return values.map((pillar) => ({
     key: pillar.key,
     label: pillar.label,
     mainStar: pillar.data.heavenly_stem.shi_shen || "-",
@@ -255,7 +280,7 @@ function initializeSelection() {
     return;
   }
 
-  const nextTimeline = buildLuckTimeline(record.value.data);
+  const nextTimeline = buildRecordTimeline(record.value);
   const currentYear = new Date().getFullYear();
   const daYunIndex = nextTimeline.daYun.findIndex((item) => currentYear >= item.startYear && currentYear <= item.endYear);
   selectedDaYunListIndex.value = daYunIndex >= 0 ? daYunIndex : Math.min(1, nextTimeline.daYun.length - 1);
@@ -287,7 +312,12 @@ function exportFutureLuck() {
   }
 
   uni.setClipboardData({
-    data: formatFutureLuckExport(data),
+    data: formatFutureLuckExport(
+      data,
+      new Date().getFullYear(),
+      10,
+      record.value?.calculation.profileId === "standard-v0.5" ? SOLAR_TERM_LOOKUP : undefined,
+    ),
     showToast: false,
     success() {
       uni.showToast({
@@ -303,6 +333,14 @@ function exportFutureLuck() {
       });
     },
   });
+}
+
+function buildRecordTimeline(source: HistoryRecord) {
+  return buildLuckTimeline(
+    source.data,
+    10,
+    source.calculation.profileId === "standard-v0.5" ? SOLAR_TERM_LOOKUP : undefined,
+  );
 }
 
 function getWuXingClass(wuXing?: string): string {
@@ -563,6 +601,32 @@ function formatLunarDay(day: number): string {
 .precision-note {
   color: #999999;
   font-size: 22rpx;
+}
+
+.start-detail-toggle {
+  align-self: flex-start;
+  height: 54rpx;
+  margin-top: 8rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid rgba(170, 145, 79, 0.45);
+  border-radius: 99rpx;
+  background: transparent;
+  color: #8a682f;
+  font-size: 21rpx;
+  line-height: 54rpx;
+}
+
+.start-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  margin-top: 12rpx;
+  padding: 18rpx;
+  border-radius: 10rpx;
+  background: rgba(170, 145, 79, 0.08);
+  color: #62665e;
+  font-size: 21rpx;
+  line-height: 1.55;
 }
 
 .timeline-card {

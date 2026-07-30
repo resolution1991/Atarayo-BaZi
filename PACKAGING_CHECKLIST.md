@@ -2,12 +2,12 @@
 
 ## 1. 当前结论
 
-当前项目已生成并完成本机静态校验与 Android 模拟器回归的 `0.4.0` 调试 APK。
+当前项目已生成并完成本机静态校验、H5 交互回归与 Android 模拟器覆盖升级验收的 `0.5.0` 调试 APK。
 
 APK 路径：
 
 ```text
-dist/apk/bazi-mvp-0.4.0-debug.apk
+dist/apk/bazi-mvp-0.5.0-debug.apk
 ```
 
 该包为本机 WebView 壳调试包，内置 H5 静态资源，使用 debug keystore 签名。APK 启动后通过 `https://appassets.androidplatform.net/index.html` 读取包内资源，由 WebView 本地拦截提供文件，不依赖外部服务器。
@@ -35,8 +35,8 @@ dist/apk/bazi-mvp-0.4.0-debug.apk
 当前 `src/manifest.json` 已配置：
 
 - 应用名：`夜琛八字`
-- 版本名：`0.4.0`
-- 版本号：`4`
+- 版本名：`0.5.0`
+- 版本号：`5`
 - AppID：`__UNI__BAZI_OFFLINE`
 - Android 权限：空权限列表
 - Android 自适应图标：金色狼月图
@@ -64,18 +64,24 @@ pnpm run build:apk:debug
 
 - 包名：`com.algernon.bazi`
 - 应用名：`夜琛八字`
-- 版本名：`0.4.0`
-- 版本号：`4`
+- 版本名：`0.5.0`
+- 版本号：`5`
 - minSdk：`23`
 - targetSdk：`36`
 - 签名：v1/v2/v3 均验证通过
 - 权限：无声明权限
-- SHA-256：`ae60071d116e401703f865ab8ecde4032b944cbc97f599df6f8f10b5866b0fdb`
+- SHA-256：`9484276d33ee6cd982c84b643b1cd2b38b652ca276b186e4dfb64068370917f8`
 
 本机 `Medium_Phone`（Android API 37）回归结果：
 
-- 最终包覆盖安装成功，`firstInstallTime` 保持为 `2026-06-25 13:19:10`，既有 5 条历史记录仍可读取。
-- 最终包冷启动成功，实测 `TotalTime: 183 ms`，crash buffer 为空。
+- 最终包覆盖安装成功，`firstInstallTime` 保持为 `2026-06-25 13:19:10`。
+- 既有 5 条历史记录全部迁移为 schema v2，均标记“旧版默认口径”，且 v1 迁移备份存在；迁移未重算原命盘。
+- 排盘设置保存与重载通过，应用/引擎/节气数据版本均可见。
+- 使用标准口径排盘、四柱倒序显示、分钟级起运过程展开及“按当前设置重排”通过；重排产生来源关联的新记录。
+- QA 结束后已清除 2 条测试记录和测试设置，原有 5 条历史记录完整保留。
+- 关闭 Wi-Fi 与移动数据后冷启动成功，实测 `TotalTime: 211 ms`；恢复网络后最终包冷启动 `TotalTime: 172 ms`。
+- 最终 crash buffer 为空，WebView 调试接口已关闭。
+- 首页、设置、命盘、历史和流运页面在 `390 × 844` 移动视口下均无横向溢出。
 - 历史页姓名搜索、性别筛选、属相筛选和“显示全部”清除筛选通过；出生年份筛选控件及候选年份正常加载。
 - 历史记录中的“子”应用 `wx-water`，计算色值为 `rgb(31, 120, 209)`。
 - 命盘导出 Toast 正确；复制内容不含姓名，且包含公历/农历、性别、两派身强身弱、格局、四柱明细、神煞和干支关系。

@@ -47,6 +47,20 @@
         </view>
       </view>
 
+      <view class="calculation-card">
+        <view class="calculation-head">
+          <text class="section-title">排盘口径</text>
+          <text :class="['calculation-badge', isLegacyRecord ? 'legacy' : '']">{{ record.calculation.profileLabel }}</text>
+        </view>
+        <text class="calculation-summary">{{ calculationSummary }}</text>
+        <text class="calculation-version">
+          {{ record.calculation.engineVersion }} · 节气 {{ record.calculation.solarTermDataVersion }}
+        </text>
+        <text v-if="record.trace" class="calculation-version">
+          月令：{{ record.trace.monthBoundary.previousJie.name }} {{ record.trace.monthBoundary.previousJie.dateTime }}
+        </text>
+      </view>
+
       <view class="chart-table">
         <view class="cell label table-head"></view>
         <view v-for="pillar in pillars" :key="pillar.key" class="cell label table-head">{{ pillar.label }}</view>
@@ -104,7 +118,10 @@
 
         <view class="cell label row-head">神煞</view>
         <view v-for="pillar in shenShaPillars" :key="pillar.key + '-shen-sha'" class="cell small shen-sha-cell">
-          <template v-if="pillar.items.length">
+          <template v-if="!shenShaEnabled">
+            <text class="disabled-rule">未启用</text>
+          </template>
+          <template v-else-if="pillar.items.length">
             <button
               v-for="item in pillar.items"
               :key="pillar.key + '-shen-sha-' + item.name"
@@ -139,7 +156,8 @@
 
       <view class="relation-card">
         <text class="section-title">八字作用关系速览</text>
-        <view class="relation-board">
+        <text v-if="!relationsEnabled" class="disabled-panel">此命盘创建时未启用干支关系规则。</text>
+        <view v-else class="relation-board">
           <view class="relation-section">
             <view v-if="relationLines.stem.length" class="relation-line-list">
               <view v-for="line in relationLines.stem" :key="line.id" class="relation-line-row">
@@ -231,6 +249,7 @@
 
       <view class="action-row">
         <button class="outline-button" @click="newChart">再排一次</button>
+        <button class="outline-button rechart-button" @click="recalculateWithCurrentSettings">按当前设置重排</button>
         <button class="export-button" @click="exportChartInfo">导出信息</button>
         <button class="primary-button" @click="openHistory">历史记录</button>
       </view>
@@ -249,11 +268,27 @@ import { computed, ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import type { HistoryRecord } from "../../services/history.ts";
 import type { WuXing } from "../../core/types.ts";
+import { calculateBaziWithProfile } from "../../core/calculate.ts";
+import {
+  APP_VERSION,
+  ENGINE_VERSION,
+  SOLAR_TERM_DATA_VERSION,
+  createStandardProfile,
+  describeCalculationSettings,
+} from "../../core/calculation-profile.ts";
 import { analyzeGanzhiRelations, type GanzhiRelation } from "../../core/relations.ts";
 import { analyzeShenSha, getShenShaDefinition, type ShenShaHit } from "../../core/shen-sha.ts";
 import { analyzeStrengthBySchool, type StrengthSchool } from "../../core/strength.ts";
 import { formatChartExport } from "../../core/chart-export.ts";
-import { readHistory, updateHistoryRecordName } from "../../services/history.ts";
+import { LUNAR_CALENDAR } from "../../data/lunar-calendar.ts";
+import { SOLAR_TERM_LOOKUP } from "../../data/solar-terms.ts";
+import {
+  isLegacyHistoryRecord,
+  readHistory,
+  saveCalculatedHistory,
+  updateHistoryRecordName,
+} from "../../services/history.ts";
+import { readCalculationSettings } from "../../services/settings.ts";
 
 interface RelationLineView {
   id: string;
@@ -278,20 +313,32 @@ onLoad((query) => {
   const id = query?.id;
   record.value = readHistory().find((item) => item.id === id) ?? null;
   nameDraft.value = record.value?.data.person.name ?? "";
+  strengthSchool.value =
+    record.value?.calculation.settings.defaultStrengthSchool ?? "traditional";
 });
 
 const birthInfo = computed(() => record.value?.data.person.birth_info ?? null);
 const pillars = computed(() => {
   const info = birthInfo.value;
-  return info
-    ? [
+  if (!info) {
+    return [];
+  }
+  const values = [
         { key: "year", label: "年柱", data: info.year },
         { key: "month", label: "月柱", data: info.month },
         { key: "day", label: "日柱", data: info.day },
         { key: "hour", label: "时柱", data: info.hour },
-      ]
-    : [];
+      ];
+  return record.value?.calculation.settings.pillarDisplayOrder === "hour-to-year"
+    ? values.reverse()
+    : values;
 });
+const isLegacyRecord = computed(() => (record.value ? isLegacyHistoryRecord(record.value) : false));
+const calculationSummary = computed(() =>
+  record.value ? describeCalculationSettings(record.value.calculation.settings) : "-",
+);
+const shenShaEnabled = computed(() => record.value?.calculation.settings.shenSha.enabled !== false);
+const relationsEnabled = computed(() => record.value?.calculation.settings.relations.enabled !== false);
 const dayMaster = computed(() => birthInfo.value?.day.heavenly_stem ?? null);
 const displayedStrength = computed(() => {
   const data = record.value?.data;
@@ -323,7 +370,7 @@ const formattedLunarDate = computed(() => {
   }
 
   const yearGanzhi = `${info.year.heavenly_stem.symbol}${info.year.earthly_branch.symbol}`;
-  const zodiac = zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
+  const zodiac = info.zodiac ?? zodiacByBranch[info.year.earthly_branch.symbol] ?? "";
   const yearText = zodiac ? `${parsed.year}（${yearGanzhi}-${zodiac}）年` : `${parsed.year}（${yearGanzhi}）年`;
   return `${yearText} ${formatLunarMonth(parsed.month)} ${formatLunarDay(parsed.day)}`;
 });
@@ -380,7 +427,7 @@ const pillarDetails = computed(() =>
 );
 const shenShaByPillar = computed(() => {
   const data = record.value?.data;
-  return data
+  return data && shenShaEnabled.value
     ? analyzeShenSha(data)
     : {
         year: [],
@@ -427,7 +474,7 @@ const relationPillars = computed(() =>
 );
 const relationLines = computed(() => {
   const data = record.value?.data;
-  if (!data) {
+  if (!data || !relationsEnabled.value) {
     return { stem: [] as RelationLineView[], branch: [] as RelationLineView[] };
   }
 
@@ -449,7 +496,7 @@ function exportChartInfo() {
   }
 
   uni.setClipboardData({
-    data: formatChartExport(data),
+    data: formatChartExport(data, record.value?.calculation.settings),
     showToast: false,
     success() {
       uni.showToast({
@@ -492,6 +539,37 @@ function closeShenSha() {
 
 function newChart() {
   uni.reLaunch({ url: "/pages/index/index" });
+}
+
+function recalculateWithCurrentSettings() {
+  const source = record.value;
+  if (!source) {
+    return;
+  }
+  try {
+    const profile = createStandardProfile(readCalculationSettings());
+    const calculated = calculateBaziWithProfile(
+      { ...source.normalizedInput, name: source.data.person.name },
+      {
+        lunarData: LUNAR_CALENDAR,
+        solarTerms: SOLAR_TERM_LOOKUP,
+        appVersion: APP_VERSION,
+        engineVersion: ENGINE_VERSION,
+        solarTermDataVersion: SOLAR_TERM_DATA_VERSION,
+      },
+      profile,
+    );
+    const next = saveCalculatedHistory(calculated, profile, source.id);
+    uni.showToast({ title: "已创建新命盘，原记录已保留", icon: "none", duration: 1800 });
+    setTimeout(() => {
+      uni.redirectTo({ url: `/pages/chart/chart?id=${next.id}` });
+    }, 350);
+  } catch (error) {
+    uni.showToast({
+      title: error instanceof Error ? error.message : "重新排盘失败",
+      icon: "none",
+    });
+  }
 }
 
 function saveInlineName() {
@@ -752,6 +830,64 @@ function formatLunarDay(day: number): string {
 
 .profile-card {
   padding: 22rpx 24rpx;
+}
+
+.calculation-card {
+  margin-top: 22rpx;
+  padding: 26rpx 28rpx;
+  border: 1rpx solid rgba(170, 145, 79, 0.22);
+  border-radius: 16rpx;
+  background: #ffffff;
+}
+
+.calculation-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calculation-badge {
+  padding: 5rpx 14rpx;
+  border-radius: 99rpx;
+  background: #eaf3ec;
+  color: #55705b;
+  font-size: 20rpx;
+}
+
+.calculation-badge.legacy {
+  background: #f4f0e6;
+  color: #8b7438;
+}
+
+.calculation-summary,
+.calculation-version {
+  display: block;
+  margin-top: 10rpx;
+  color: #5f6662;
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.calculation-version {
+  color: #8b908d;
+  font-size: 20rpx;
+}
+
+.disabled-rule {
+  color: #a5aaa7;
+  font-size: 20rpx;
+}
+
+.disabled-panel {
+  display: block;
+  padding: 34rpx 0;
+  color: #8b908d;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+.rechart-button {
+  min-width: 210rpx;
 }
 
 .day-master {
@@ -1426,7 +1562,7 @@ function formatLunarDay(day: number): string {
 
 .action-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14rpx;
   margin-top: 4rpx;
 }

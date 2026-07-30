@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "de440s-skyfield-1.53-v1",
+  "range": {
+    "first": "1899-12-07 15:04",
+    "last": "2100-03-20 21:06"
+  },
+  "recordCount": 4808,
+  "timeZone": "fixed UTC+08:00",
+  "rounding": "nearest minute; 30 seconds rounds up",
+  "generator": {
+    "script": "tools/generate_solar_terms.py",
+    "skyfieldVersion": "1.53",
+    "ephemeris": "de440s.bsp",
+    "ephemerisSha256": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2"
+  },
+  "outputSha256": "df0189183fabd8351efd5443d17a32264f4be4872505d6127e73221a1d539942"
+}

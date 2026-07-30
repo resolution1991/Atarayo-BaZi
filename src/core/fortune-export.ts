@@ -1,5 +1,6 @@
 import type { BaziData, PillarName } from "./types.ts";
 import { buildLuckTimeline, type DaYunItem, type LiuNianItem, type LuckBranch } from "./luck.ts";
+import type { SolarTermLookup } from "./solar-terms.ts";
 
 const PILLARS: Array<{ key: PillarName; label: string }> = [
   { key: "year", label: "年柱" },
@@ -12,8 +13,9 @@ export function formatFutureLuckExport(
   data: BaziData,
   currentYear = new Date().getFullYear(),
   yearCount = 10,
+  solarTerms?: SolarTermLookup,
 ): string {
-  const timeline = buildLuckTimeline(data);
+  const timeline = buildLuckTimeline(data, 10, solarTerms);
   const endYear = currentYear + yearCount - 1;
   const lines = [
     `未来${yearCount}年流年大运（${currentYear}—${endYear}）`,

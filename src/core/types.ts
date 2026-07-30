@@ -70,6 +70,7 @@ export interface BirthInfo {
   gregorian_date: string;
   lunar_date: string;
   birth_time: string;
+  zodiac?: string;
   year: Pillar;
   month: Pillar;
   day: Pillar;
